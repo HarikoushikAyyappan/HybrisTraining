@@ -1,0 +1,86 @@
+29/12/22
+Services:
+
+	*The extension commerceservices  provide  high-level business services to satisfy B2C use cases by orchestrating calls to lower-level platform services.
+	
+	*This extension also extends item types and functionality, defined in other extensions.
+	
+	*WE should always look to use simple reusable services and orchestrate calls between them rather than going for complex services.
+	
+ Architecture of Service Layer:
+ 
+	*SAP Commerce Cloud uses a Service-Oriented Architecture, its functionality is divided into layers. 
+	
+	*our site’s business logic will be found in the service layer, which will be connecting  presentation layer and persistence layer.
+
+	*This is where we implement our own logic, using Type System Models to exchange data with out-of-the-box infrastructure and high-level business services.
+	
+	*Service layer is between presentation layer and persistence layer.Here we can perform BUsiness services,Infrastructure services and persistence related services like dao layer.Here
+	 we can perform our own logic also.
+	 
+	* Models are the main element of the service layer.
+	 
+	* They are used to fetch data from the persistence layer to the service layer, and to exchange data between services in the service layer.
+
+ Models:
+	*MOdels are plain old java objects which represent database .
+	*models can be used to perform crud operations.New instances of models can be created.
+ Platform Testing Environment:
+ 
+	*Junit testing framework can be used to create unit and integration tests for services.
+
+	*we can extend an out-of-the-box class to run integration tests within the SAP Commerce runtime environment.
+	
+	*Unit test is performed to test a singke class.@Unittest annotattion should be used.@Test annotation is used before the method whose functionality is to be tested.
+	
+	*@Integrationtest annotation shouldbe used to do an integration test.
+	
+	*the class(es) to be tested should be kept in a separate package srctest and the classes to be tested can be suffixed with 'test'.
+	
+	*ant unittest and ant integrationtest are used to run unittest and integration test.
+	
+ Transaction Managemaent:
+
+	Transactions are ACID (atomic, consistent, isolated, durable)
+
+	SAP Commerce provides implementation of Spring PlatformTransactionManager so you can use:
+
+		@Transactional (org.springframework.transaction.annotation. Transactional)
+
+		tx XML schema
+
+		TransactionTemplate
+
+		- Or SAP Commerce API
+
+	The JTA UserTransaction interface is not provided
+	
+	SAP Commerce Cloud currently supports two ways for the service layer to interact with the persistence layer.
+ 
+ Service layer Direct:
+	
+	*Jalo is our legacy mechanism and is still the default at this time to support backward compatibility.
+	
+	*Service Layer Direct (SLD) is more efficient and uses fewer resources. It can be used on an as-needed basis in your Java code or when invoking ImpEx.
+	
+  Enabling SLD Persistence:
+
+	Globally, by setting persistence legacy.mode property to false (not recommended)
+	WE hsould note that  the property is true by default
+	
+	Just for the current session context, using the API
+		Persistenceutils.dowithSLOVersistence()-> { Final TitleModel title=modelService.create(Titledel.class); title.setCode("foo");
+		modelService.save(title):: return title; });
+		
+    In Distributed ImpExby configuring ImportConfig object ImportConfig.setSdForData(true);
+	
+	by setting SLD in one ImpEx header
+		INSERT UPDATE Title[sld.enabled-true);code[unique-true]
+		
+		
+Facades:
+ Role of facade layer:
+
+
+
+	

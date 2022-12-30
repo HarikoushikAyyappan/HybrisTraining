@@ -1,0 +1,167 @@
+SAP COMMERCE
+*SAP Commerce is a platform that provides e-commerce based solutions to boost profits and customer satisfaction along with scaled innovations.
+*The core of SAP Commerce is its platform which provides data persistence along with business services,system services and infrastructure services.
+*Sap Commerce helps its using organizations in cutting costs,save time and efficient performance.  
+*It helps its consumers to grip their hold in b2b and b2c markets.
+*It has products for                     *Commerce
+                                         *Marketing
+					 *Sales
+					 *Service
+					 *Billing
+					 *Cross-Functional solutions
+*It is used by number of companies like Decathlon,Nike etc because of its ability to provide good customer experience.
+*Sap Commerce comes with lot of pre Indicated system feature which is not present in its competitors.
+*The pre-Indicated System feature include *Master Data
+                                          *Marketing
+					                       *Analytics
+					                       *Cloud Integrations
+*It helps its consumers to build their e-commerce business without spending much time in planning as it provides all
+ the necessary features.
+*Sap Commerce is a omni channel Commerce solution
+*SAP COMMERCE is built on spring framework of Java and it uses all the powerful functionalies of java,jdbc and Aop.
+*The key Concepts of Spring that is being used in Sap COMMERCE are Dependency Injection,AOP,Spring Security and Spring MVC
+*SAP COMMERCE provides templates called Recipes using which an e-commerce site can be developed easily.
+*SAP COMMERCE also functions as product content management software.
+*SAP COMMERCE Cloud is an example of Platform as a service.(ie)development of application and maintanence of data is only done remaining 
+   network,storage,server,operating system,middleware,virtualization,runtime is provided by vendor)
+ Benefits of SAP COMMERCE:
+  * Ease of development
+     *It works on SOA Architecture which helps to access its existing functionalies and enhance its functionalies easily.
+	 *The SAP COMMERCE zip or Suite consists of all the basic functionalies/webpages that are needed to create an e-commerce website.
+  * Customizable
+     *It can be easily customized according to the specific business needs of its consumers.
+  *Integrations
+     *It can be integrated with other SAP Products and Other third party Systems easily compared to its competitors
+	  and data can be infused and maintained easily from other sources into SAP COMMERCE.
+  *Scalable and secure
+     *Supports b2b and b2c workloads and provides strong security framework for authentication.
+  *Cloud Environemnt
+      *It provides flexible and robust solutions to have a cloud environment in applications.
+  *Runtime Update
+      *Sap Commerce is a product management software which allows Runtime Changing of a price or image of a buyable consumer product or contents of homepage(done by content managers using small software called smartedit/cockpit ).
+	  
+	  
+Competitors:
+*Oracle-ATG
+*Open Sources-Magento
+*IBM-Websphere Commerce
+References:
+https://www.jrebel.com/blog/sap-commerce-cloud
+https://www.youtube.com/watch?v=rW629-0ySGs
+https://www.youtube.com/watch?v=ocdGdcuFP2w&list=PLw7h5qVWrsNxjI8kbPr6nCo0l1p0253K6&index=1
+https://www.youtube.com/watch?v=7SqGH8xJNJ4
+19/12/22
+https://www.youtube.com/watch?v=Ao4JwwXOszQ
+
+SAP Commerce Cloud:
+
+SAP COMMERCE Cloud Platform Features:
+*The core of Sap Commerce is its platform which provides persistence framework for data storing,Business services for cart handling and back order,System serices for model handling and session 
+handling,Infrastructure services for Internationalization and Export&Import.
+*The Platform also contains Infrastructure that contains extensions which has many features and functions needed for a commerce solution.This concept is called Extensibility.The extensions are encapsulated within
+modules and the modules comine together to form Eg.Personalization Module cosnists of extensions needed for User Interface elements,all technical capabilities like web services ,data model,logic etc.
+* Both UI and Technical components are delivered to the platform as extensions which can be used as such or can be modified as per requirements or can be extended as per requirements.
+
+Accelarators:
+*Accelarators form the basic framework for developing a website corresponding to the sector.
+*The Accelarators form the starting point for the website development that can be used ,modified as per the business requirements.
+*The Accelarators provide about 80 percent of the stuff needed for a website development,remaining 20 percent is done according to the business requirementssuch as the integration
+ with other api,billing details and modes etc
+*The two types of accelarators are b2c accelaratorsand b2b accelarators.
+*B2C Accelarators provide all the features needed for a website that is delivering its products directly to its customers. The features include searching for a product,filtering products based on 
+ different categories,select a product based on different paramters(eg.selecting shoe/shirt size ),features related to billing,cart details,Shipping details etc .
+B2B Accelarators:
+*B2B Accelarators provide all the functionalities similar to b2b accelarators and provide extra functionalies like orderapproval,quote management,scheduled order replenishment,self service
+ organization management etc.
+
+SAP COMMERCE Cloud System Architecture:
+* The bottom most layer is the database layer(eg.MySql) .The layer above the database layer is the application server(eg.Tomcat).The layer above application server is the platform which has 
+ persistence framework and is capable to do business,system and infrastructure services.The layer above is the extensions built on top of platform which can perform functions related to cart,promotion,workflow,
+ customer support,pricing etc.The layer above is the Api layer which is used by other entities to get access to the data and services underlying.The top layer is the Frontend layer 
+ which has client front end and back office front end applications.The client front end application uses spring mvc based accelarators or spartacus based single application page, the same can alos be 
+ accessed by mobile app or any other application that uses RestAPi. The Backoffice Front end consists of features needed for managers,admin depending on the requirement.In addition 
+to that it has smartedit feature to customize product/content ie.) accelarator storefront.
+
+Configuration and Installation:
+*The SAP COMMERCE has a build framework based on Apache Ant.Apache Ant handles source code generations,compilation and number of automation tasks.
+*SAP COMMERCE can be built in two ways 1)Platform wide and 2)Extension specific. If platform-wide is used,the platform and all extensions listed or referenced in localextensions.xml file is built.
+if Extension specific is used , only the current extension is bulit even if other extensions are connected by dependencies.Every extension has the Antbuild.xml file after it is initially
+created.but generally the one in the platform extension to build the entire suite.
+*When Ant is called,the build framework 
+          *Generates and compiles Model classes based on the definitions in items.xml file and in the order required by extension dependencies.
+          *Collects localization property files(location XY.properties).
+          *Updates configuration of the commerce server.
+          *Generates new folders in the installation base folder(only during first run).
+*ANt build framework  is configured by a number of predefined BuildTargets such as 
+          *all-builds the platform and configures the server
+          *clean-cleans all the platform and extensions(generated .class files).
+          *modulegen-generates a bundled set of interconnected extensions based on a module template.
+          *extgen-generates an individual extension based on extension template.
+          *initialize-initializes the system(recreates and populates database tables.)	
+          *-p-shows the list of Ant targets
+References:
+https://learning.sap.com/learning-journey/explore-the-technical-essentials-of-sap-commerce-cloud/configuring-properties-files_b5567e39-c89b-41a4-b0f4-bd00389a9426
+		  
+20/12/22
+
+Extension SAP COMMERCE:
+*Extensios are the place where we put our own implementation so that the source code is compiled when Ant build is trigerred.
+*Extensions are the building blocks of SAP COMMERCE Cloud.
+*Extensions contributes the greater whole of SAP COMMERCE .we use or modify or add on features to data model,business logic or back office configuration etc.
+*Extensions are the packaging mechanism .Everything from the platform to the accelarator to the customizable functionalies are packaged as Extensions.
+*The Extension approach allows your custom code to remain separated from the standard sap commerces's framework code because it allows migration to future versions.
+*The two kinds of extension are 1)add-ons,that extend storefront or occ functionalities 2)templates, that is used to use or add on functionalies as per need which froms the startingpoint
+for creating a new extension.
+*The structure of an extension looks like the structure of a project in java development IDE. It contains an number of directories such as 1)src directory which contains business logic
+implementations such as java source files 2)classes directory that gets automatically generated during build process to store java classes.3)library directory which usually contains third party
+ libraries such as jar files.4)resource directory that contains Sap Commerce related configuration files such as Impex,type definition and localization files.eg.extension name_items.xml which is a type definition file used to define
+extension's custom data model and spring.xml which is used to customize spring context.5)Test source contains junit java source files.6)beside this it contains web related directories such as
+web source directory that contains web related source code and web test directory that contains test code and web root directory that contains module and web page related configuration.
+
+Creating an Extension:
+*Extensions are created programmatically.
+*'ant extgen' is used to create an extension based on a predefined extension template.'ant module gen'is used to create extensions based on module template,such as accelarator template.
+*Most Extensions are created using predefined templates.we have to select the template depending on our purpose.eg.yempty is used to create an extension with minimal configuration for 
+SAP COMMERCE Cloud, yaddon is used to create addon .YBackOffice is used to create extension with custom backoffice templates and Y commercewebservices is used to espose parts of commerce
+facades as Rest based web services.
+*After an extension is created,we should reference any extension it requires in extensioninfo.xml file and we should not forget to add the extension in config/local extensions.xml file.
+'ant all' and ' clean all' is used to build the changes.
+
+Configuration of files:
+*In SAP COMMERCE there are four important files to be configured.1)config/localextensions.xml-list of extensions included in ant build is present 2)extensionName/extensionInfo.xml-list
+dependencies of extensions are defined here.3)extensionName/project.properties-extension related default configurations are put here 4)config/local.properties- default configuration is overrided here.eg.
+database URL and credentials.
+  project.properties Precedence:
+   *All extensions implicitly depend on platform.Dependency chain determines precedence.
+   *local.properties overrides all project.properties.
+   *cyclic dependencies are rejected by ant.
+   *eg. if there are conif/local.properties
+                     ......................
+					 commerce facades/project.properties
+					 commerceservices/project.properties
+					 basecommerce/project.properties
+					 platform/project.properties ,       then all project.properties override the preceeding one in the build order and lastly local,properties overrides all project.properties settings.
+  location of config files:
+   *project.properties and extensionsInfo.xml are present in extension's base folder & local.properties and localextensions.xml are present in hybris/config folder.
+localextensions.xml:Load required extensions   
+ *we can define extensions explicitly
+   <extensions>
+   <extension dir ="$HYBRIS_BIN_DIR/ext-commerce/basecommerce"/>
+   ....
+   Or by using a lookup folder (and its nested folders) along with <path> tag.
+     *It allows to load extensions using name rather than path.
+	 *It allows lazy loading-Sap commerce searches the directories for any extension refrenced by another extension and pulls it into the current configuration.
+       <extensions>
+	   <path dir ="HYBRIS_BIN_DIR"/>
+	   <extension name="commerceservices"/>
+  *loading all the extensions in a folder:
+     *we can autoload all the extensions in a folder with the path tag and limit lookup to specific directories.
+	   Out of The Box,local extensions.xml file specifies the path hybris/bin and we should be careful not to load more extensions than needed.
+	   <extensions>
+	   <path autoload="true" dir="$HYBRIS_BIN_DIR/backoffice" depth="3"/>
+	   <path dir="$HYBRIS_BIN_DIR"/>
+	   <extension name="basecommerce"/>
+	   ....
+	   </extensions>
+References:
+https://learning.sap.com/learning-journey/explore-the-technical-essentials-of-sap-commerce-cloud/configuring-properties-files_b5567e39-c89b-41a4-b0f4-bd00389a9426

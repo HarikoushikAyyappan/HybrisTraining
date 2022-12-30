@@ -1,0 +1,48 @@
+SAP Commerce Cloud:
+
+SAP COMMERCE Cloud Platform Features:
+*The core of Sap Commerce is its platform which provides persistence framework for data storing,Business services for cart handling and back order,System serices for model handling and session 
+handling,Infrastructure services for Internationalization and Export&Import.
+*The Platform also contains Infrastructure that contains extensions which has many features and functions needed for a commerce solution.This concept is called Extensibility.The extensions are encapsulated within
+modules and the modules comine together to form Eg.Personalization Module cosnists of extensions needed for User Interface elements,all technical capabilities like web services ,data model,logic etc.
+* Both UI and Technical components are delivered to the platform as extensions which can be used as such or can be modified as per requirements or can be extended as per requirements.
+
+Accelarators:
+*Accelarators form the basic framework for developing a website corresponding to the sector.
+*The Accelarators form the starting point for the website development that can be used ,modified as per the business requirements.
+*The Accelarators provide about 80 percent of the stuff needed for a website development,remaining 20 percent is done according to the business requirementssuch as the integration
+ with other api,billing details and modes etc
+*The two types of accelarators are b2c accelaratorsand b2b accelarators.
+*B2C Accelarators provide all the features needed for a website that is delivering its products directly to its customers. The features include searching for a product,filtering products based on 
+ different categories,select a product based on different paramters(eg.selecting shoe/shirt size ),features related to billing,cart details,Shipping details etc .
+B2B Accelarators:
+*B2B Accelarators provide all the functionalities similar to b2b accelarators and provide extra functionalies like orderapproval,quote management,scheduled order replenishment,self service
+ organization management etc.
+
+SAP COMMERCE Cloud System Architecture:
+* The bottom most layer is the database layer(eg.MySql) .The layer above the database layer is the application server(eg.Tomcat).The layer above application server is the platform which has 
+ persistence framework and is capable to do business,system and infrastructure services.The layer above is the extensions built on top of platform which can perform functions related to cart,promotion,workflow,
+ customer support,pricing etc.The layer above is the Api layer which is used by other entities to get access to the data and services underlying.The top layer is the Frontend layer 
+ which has client front end and back office front end applications.The client front end application uses spring mvc based accelarators or spartacus based single application page, the same can alos be 
+ accessed by mobile app or any other application that uses RestAPi. The Backoffice Front end consists of features needed for managers,admin depending on the requirement.In addition 
+to that it has smartedit feature to customize product/content ie.) accelarator storefront.
+
+Configuration and Installation:
+*The SAP COMMERCE has a build framework based on Apache Ant.Apache Ant handles source code generations,compilation and number of automation tasks.
+*SAP COMMERCE can be built in two ways 1)Platform wide and 2)Extension specific. If platform-wide is used,the platform and all extensions listed or referenced in localextensions.xml file is built.
+if Extension specific is used , only the current extension is bulit even if other extensions are connected by dependencies.Every extension has the Antbuild.xml file after it is initially
+created.but generally the one in the platform extension to build the entire suite.
+*When Ant is called,the build framework 
+          *Generates and compiles Model classes based on the definitions in items.xml file and in the order required by extension dependencies.
+          *Collects localization property files(location XY.properties).
+          *Updates configuration of the commerce server.
+          *Generates new folders in the installation base folder(only during first run).
+*ANt build framework  is configured by a number of predefined BuildTargets such as 
+          *all-builds the platform and configures the server
+          *clean-cleans all the platform and extensions(generated .class files).
+          *modulegen-generates a bundled set of interconnected extensions based on a module template.
+          *extgen-generates an individual extension based on extension template.
+          *initialize-initializes the system(recreates and populates database tables.)	
+          *-p-shows the list of Ant targets
+References:
+https://learning.sap.com/learning-journey/explore-the-technical-essentials-of-sap-commerce-cloud/configuring-properties-files_b5567e39-c89b-41a4-b0f4-bd00389a9426

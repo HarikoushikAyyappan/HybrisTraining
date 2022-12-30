@@ -1,0 +1,217 @@
+28/12/22
+Import and Export:
+
+*ImpEx is an out-of-the-box CSV-based import/export framework.
+
+*Requires familiarity with the SAP Commerce Cloud type system.
+
+*Developers can directly create, update, export, and remove items by using ImpEx scripts.
+
+*ImpEx can be used in scenarios Such as:
+
+ Importing customer data into a production system
+
+ Creating backups
+
+ Migrating data from one SAP Commerce installation to another
+ 
+ Importing test data into a QA System.
+ 
+ Launching Import/Export Tasks:
+
+   Import and Export operations can be launched in a number of different ways:
+
+     Using the Hybris Administration Console
+
+     Using Backoffice
+
+     Via CronJobs
+
+     Through API Invocation
+	 
+ImpEx Script
+
+ Every ImpEx script contains one or more headers. Each header is followed by one or more data rows.
+ The header row begins with an operation, indicating what it intends to do.
+ The operation is followed by an item type and a list of attributes, which may be reference attributes, with optional modifiers.
+ Data rows correspond positionally to attributes in the header.
+ Valid operations may be INSERT, UPDATE, INSERT_UPDATE, and REMOVE
+ 
+Syntax Elements
+
+   defaults
+
+   scripting
+
+   document id
+
+   translators
+
+   collections
+
+   maps
+
+   advanced
+ 
+ImpEx Script for Export:
+
+ Specify the target file
+
+ Specify attributes to export
+
+ Consider using the Backoffice Script Generator
+ 
+ Full Export
+
+ Selective Export
+
+  Eg.bunshellX impex.setTargetFile("Product.csv"");" INSERT UPDATE Product; cade unique true]; name[lang-en]; name[lang=fr]
+  
+  Example for Full Export: 
+  #xbeanshel1% impex.setTargetFile( ""Product.csv";"
+
+  INSERT UPDATE Product; code[unique=true]; name[lang-en];name[lang=fr]
+
+  "#xbeanshel1% impex.exportItems FlexibleSearch(
+
+  
+ Example for SElective Export:
+ 
+ #xbeanshel1% impex.setTargetFile( ""Product.csv";"
+
+  INSERT UPDATE Product; code[unique=true]; name[lang-en];name[lang=fr]
+
+  "#xbeanshel1% impex.exportItems FlexibleSearch(
+
+  ""select (pk) from (Product) where {code} like '%happy%'""};"
+  
+  Launching an Export:
+  
+   In the Backoffice
+
+      System Tools →→ Import
+
+      System Background Processes → CronJobs  (+) ImpEx Import CronJob
+
+      Using the Command Line
+ 
+      ant importImpex
+
+      Using the API
+
+      We can use the ImportService, ImpExImportCronJob, Importer, etc.
+	  
+	  
+	  Launching an Export
+
+      *In the Hybris Administration Console
+
+      *Test area for ImpEx scripts .
+
+      *In the Backoffice System → Tools → Export
+
+      *System Background Processes → CronJobs (+) ImpEx Export CronJob
+
+     *Using the API
+
+        Use the ExportService
+		
+		
+Distributed Impex:
+ Overview:
+
+   *Splits up ImpEx import work into separate batches that are distributed across the cluster, with the aim of handling large-scale import tasks more efficiently
+
+   *use the existing ImpEx framework to parse and analyze input, dump unresolved lines, and use the TaskEngine to process single batches of data
+
+   Works in 3 phases
+
+     Prepare and split phase: the ImpEx file is read and split into batches
+
+     Single task execution phase: the task engine executes each batch individually, in parallel
+
+     Finish phase: Clean-up work
+	 
+ *WE can  do it in the administration console by checking on the distributed mode.
+ 
+ *API enablement:
+  
+   Enabling data import in the distributed mode programmatically works similarly to regular ImpEx.
+
+   To enable it, use the ImportConfig API
+   /*
+   assuming we have an ImpExResource object that points to an import file on classpath
+
+   */
+
+   final ImpExResource importFile;
+   final ImportConfig config = new ImportConfig();
+   config.setDistributed ImpexEnabled(true); config.setScript (importFile);
+   // perform import
+   final ImportResult importResult = importService.importData(config);
+   
+ Flexible Search:
+ 
+  The SAP Commerce Suite comes with "Flexible Search".
+
+  It is based on SQL, and enables you to search for and retrieve items in the SAP Commerce domain.
+
+  As such, only SELECT operations are allowed.
+
+  In other words, in Flexible Search, you express your query in terms of SAP Commerce types and their attributes instead of the underlying database tables and their columns.
+
+  our type-based query is converted  into an underlying table- based query, to de-couple your application logic from database- storage details.
+  
+  Features of Flexible Search:
+
+    Overview
+
+	*Can be executed interactively from HAC's Flexible Search Console (returns data in typical query-result fashion)
+
+	*Joins and sub-queries are often needed for linked objects.
+
+	*When executed from the Java or Groovy API, (using the FlexibleSearchService). you can obtain a list of "whole-item objects" (instances of Java model classes corresponding to instances of SAP Commerce types)
+
+	*Query parameters are often used
+
+		- Joins generally not needed, as it's easy to navigate/traverse to linked objects
+
+	*Allows most features of SQL SELECT statements
+
+	*Queries go through cache
+
+ Flexible search Example:
+ 
+ Simple Query Examples
+
+ Flexible Search is SQL, just preprocessed to convert the commerce-domain parts into database-table parts
+
+   E.g.: Retrieving items of type Product and its subtypes, like Car
+
+ SELECT (code), (name) FROM (Product)
+
+  E.g.: Slightly more specialized (excludes non-Car items of Product supertype, but includes subtype items) SELECT (code) as "Prod ID", (hp) as "Horsepower" FROM (Car}
+
+ Specific-type queries
+
+   Returns items instantiated strictly of type Product, not items of subtypes or supertypes SELECT (code) FROM (Product!)
+
+ Group functions:
+
+(  notice how only attribute names and SAP Commerce types are enclosed in curly braces { })
+
+ SELECT count(*) FROM {Product}
+
+ SELECT count({description}) FROM (Product}
+ 
+ 
+ Fkexible SEarch API:
+ 
+	we can search for SAP Commerce Items in your code by invoking the Flexible Search APIs, which are methods of the FlexibleSearchService Spring bean.
+	Similar to jpa query in spring.we can search from items depending on our need.
+	There are queries for atomic paramaters,non-atomic parameters,model objects,non model objects(1-coloumn and 2-coloumn queries),date related queries,pagination related queries etc.
+	
+
+
+
+

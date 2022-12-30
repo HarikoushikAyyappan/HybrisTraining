@@ -1,0 +1,16 @@
+Back office and BackOffice Framework:
+*Backoffice platform is basically a software platform for develping web based applications.
+*Like other frameworks ,it is also generic,we have to configure and extend to our own application.
+*Sap Commerce Administrative cockpit is an user interface used to visually demonstrate the features and capabilities of backoffice which is generic.
+**Back office is the single user interface for all backend business tools.It is provided out of the box with Sap Commerce suite.
+*when we login to backoffice as  a user with admin role we can be able to walk in through backoffice.we can be able to change the languae when we login.
+*AFter login,we can able to see Administration cockpit in the default layout which consists of a border layout. the Border layout widget is a layout widget which allows other widgets to be 
+positioned within.
+*The layout widget is divided into two parts,lefthand and right hand side.The right hand side consists of adminstration cockpit as default.
+*In administration cockpit,there will be an option called System toolbar where we can do system actions.There will be logout from right to left.There will be option to enable or disable 
+Locale.We can access Colloboration center where we can access the workflows and interact with them.WE can view the list of processes.If we have more than one perspective logged in here we can
+change it to different one.Perspective is the certain view of the application depending upon the role of the user loggedin .
+*In the left hand side,Explorer Tree widget will be there.using this we can filer or type the categories and search.eg, if we type products ,we will get list of all the products and we can do edit the product name,type,photo,
+description,cost,attributes etc.
+
+

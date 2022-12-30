@@ -1,0 +1,61 @@
+Extension SAP COMMERCE:
+*Extensios are the place where we put our own implementation so that the source code is compiled when Ant build is trigerred.
+*Extensions are the building blocks of SAP COMMERCE Cloud.
+*Extensions contributes the greater whole of SAP COMMERCE .we use or modify or add on features to data model,business logic or back office configuration etc.
+*Extensions are the packaging mechanism .Everything from the platform to the accelarator to the customizable functionalies are packaged as Extensions.
+*The Extension approach allows your custom code to remain separated from the standard sap commerces's framework code because it allows migration to future versions.
+*The two kinds of extension are 1)add-ons,that extend storefront or occ functionalities 2)templates, that is used to use or add on functionalies as per need which froms the startingpoint
+for creating a new extension.
+*The structure of an extension looks like the structure of a project in java development IDE. It contains an number of directories such as 1)src directory which contains business logic
+implementations such as java source files 2)classes directory that gets automatically generated during build process to store java classes.3)library directory which usually contains third party
+ libraries such as jar files.4)resource directory that contains Sap Commerce related configuration files such as Impex,type definition and localization files.eg.extension name_items.xml which is a type definition file used to define
+extension's custom data model and spring.xml which is used to customize spring context.5)Test source contains junit java source files.6)beside this it contains web related directories such as
+web source directory that contains web related source code and web test directory that contains test code and web root directory that contains module and web page related configuration.
+
+Creating an Extension:
+*Extensions are created programmatically.
+*'ant extgen' is used to create an extension based on a predefined extension template.'ant module gen'is used to create extensions based on module template,such as accelarator template.
+*Most Extensions are created using predefined templates.we have to select the template depending on our purpose.eg.yempty is used to create an extension with minimal configuration for 
+SAP COMMERCE Cloud, yaddon is used to create addon .YBackOffice is used to create extension with custom backoffice templates and Y commercewebservices is used to espose parts of commerce
+facades as Rest based web services.
+*After an extension is created,we should reference any extension it requires in extensioninfo.xml file and we should not forget to add the extension in config/local extensions.xml file.
+'ant all' and ' clean all' is used to build the changes.
+
+Configuration of files:
+*In SAP COMMERCE there are four important files to be configured.1)config/localextensions.xml-list of extensions included in ant build is present 2)extensionName/extensionInfo.xml-list
+dependencies of extensions are defined here.3)extensionName/project.properties-extension related default configurations are put here 4)config/local.properties- default configuration is overrided here.eg.
+database URL and credentials.
+  project.properties Precedence:
+   *All extensions implicitly depend on platform.Dependency chain determines precedence.
+   *local.properties overrides all project.properties.
+   *cyclic dependencies are rejected by ant.
+   *eg. if there are config/local.properties
+                     ......................
+					 commerce facades/project.properties
+					 commerceservices/project.properties
+					 basecommerce/project.properties
+					 platform/project.properties ,       then all project.properties override the preceeding one in the build order and lastly local,properties overrides all project.properties settings.
+  location of config files:
+   *project.properties and extensionsInfo.xml are present in extension's base folder & local.properties and localextensions.xml are present in hybris/config folder.
+localextensions.xml:Load required extensions   
+ *we can define extensions explicitly
+   <extensions>
+   <extension dir ="$HYBRIS_BIN_DIR/ext-commerce/basecommerce"/>
+   ....
+   Or by using a lookup folder (and its nested folders) along with <path> tag.
+     *It allows to load extensions using name rather than path.
+	 *It allows lazy loading-Sap commerce searches the directories for any extension refrenced by another extension and pulls it into the current configuration.
+       <extensions>
+	   <path dir ="HYBRIS_BIN_DIR"/>
+	   <extension name="commerceservices"/>
+  *loading all the extensions in a folder:
+     *we can autoload all the extensions in a folder with the path tag and limit lookup to specific directories.
+	   Out of The Box,local extensions.xml file specifies the path hybris/bin and we should be careful not to load more extensions than needed.
+	   <extensions>
+	   <path autoload="true" dir="$HYBRIS_BIN_DIR/backoffice" depth="3"/>
+	   <path dir="$HYBRIS_BIN_DIR"/>
+	   <extension name="basecommerce"/>
+	   ....
+	   </extensions>
+References:
+https://learning.sap.com/learning-journey/explore-the-technical-essentials-of-sap-commerce-cloud/configuring-properties-files_b5567e39-c89b-41a4-b0f4-bd00389a9426

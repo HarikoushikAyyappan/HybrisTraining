@@ -1,0 +1,90 @@
+26/12/22
+Items.xml
+
+items.xml defines the type of an extension into xml format.
+Items.xml file contains the type definition in hybris
+
+
+
+
+basic structure of an items.xml file is :
+
+
+	<items xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	
+	xsi:noNamespaceschemaLocation="items.xsd">
+	<atomictypes> .... </atomictypes>
+	<collectiontypes> ------ </collectiontypes>
+	
+	<enumtypes> ------ </enumtypes>
+	<maptypes> ---- </maptypes>
+	<relations> ---- </relations>
+	<itemtypes> --- </itemtypes>
+	
+	--- if object is catalog un aware than we extend GenricItem.
+	
+	
+	--- in Hyris Order and cart both extend AbstractOrder
+	
+	-- orderEntryModel and cartEntryModel both extend AbstractOrderEntryModel
+	
+	--- Language,country and currency extend C2LItem type
+	
+	---- SAP recommends us to create Subtypes as it keeps SAP Core types untouched.
+	
+	Sample items.xml
+	
+	<items ...... >
+	<atomictypes>
+	
+	<atomictype class="java.lang.object" autocreate="true" generate="false" />
+    <atomictype class="java.lang.Number" extends="java.lang.Object" autocreate="true" generate="false" />
+    </atomictypes>
+
+
+    <collectiontypes>
+    
+	 <collection code ="samleCollection" elementtype="Item" autocreate="true" generate="false" />
+    </collectiontypes> 	
+	
+	<enumtypes>
+	<enumtype code = "TestEnum"
+	
+	 <value code = "abc"/>
+	 
+	</enumtypes>
+	<enumtype code="QuoteState" autocreate="true" generate="true" dynamic="true">
+            <value code="CREATED"/>
+            <value code="DRAFT"/>
+            <value code="SUBMITTED"/>
+            <value code="OFFER"/>
+            <value code="ORDERED"/>
+            <value code="CANCELLED"/>
+            <value code="EXPIRED"/>
+        </enumtype>
+		
+		
+		<maptypes>
+		
+		<maptype code="myFirstMap" argumenttype="language" returntype="java.math.BigInteger" autocreate ="true" generate="true"
+		
+		</maptypes>
+		
+		here argumnettype is key and returntpe is value
+		
+		
+		<relations>
+		
+		<relation code="User2Orders" generate="true" localized="false" autocreate="true">
+            <sourceElement type="User" cardinality="one" qualifier="user">
+                <modifiers read="true" write="true" search="true" optional="false"/>
+            </sourceElement>
+            <targetElement type="Order" cardinality="many" qualifier="orders">
+                <modifiers read="true" write="true" search="true" optional="true" partof="true"/>
+            </targetElement>
+        </relation>
+		
+		
+		 
+		</relations> 
+		

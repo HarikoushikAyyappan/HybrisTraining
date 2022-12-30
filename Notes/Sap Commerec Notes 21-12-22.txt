@@ -1,0 +1,58 @@
+SAP Commerce Server Features:
+*Sap commerce server comes with preconfigured tomcat server.It can be well adopted for all the sap commerce related applications.
+*Configuration templates are available for production deployment and production.
+*Contains a wrapper so that it is troubleshooted automatically if tomcat server hangs or any other problem rises.
+SAP Commerce Administration Console(HAC):
+*Sap commerce is a web application that enables Administration,Monitoring and Configuration.
+*Administration:
+  The following functions can be done using this,
+    *ACtivating new tenants
+	*setting the logging levels for different users
+	*Initialize and update system.
+*Monitoring:
+  It enables runtime monitoring of the system.The following functions can be performed.
+    *Cache page provides the parameter,status,statistics of cache pages.
+	*cluster page shows list of cluster nodes.
+    *Database monitoring includes,
+	   Datasource tab shows the configured data sources with status paramaters.
+	   Tablesize tan shows the list of all tables for the configured data sources.
+	   Jdbc logging tab enables logging to the configured logfile and allows to download it.
+	   Jdbc log analysis tab helps to identify jdbc statements executed very often and jdbc statements that took long time to execute.
+*Configuration:
+  It enables to configure the system at runtime.eg.addon filter is used to copy modified web resources from addonextension to storefront extension.
+  The changes made in the configuration are not persistent.when the server is restarted ,the changes made will come to default.
+   
+  Initializing and updating Sap commerce cloud:
+  *The two important maintanence process in SAP cOMMERCE is Initialization and Update.
+  *The Sap commerce depends on the data storedin database .
+  *The sap commerce instance has to be extended from its typedefinition and new type definitions should be made and reflected in the database.
+   Initialization:
+       *when a new Sap commerce instance is created,database tables are dropped, the type definitions of the instancs are read from items.xml file and tables are created in database according to the 
+	   type definition of instances .when this process is done ,data loss my occur.
+   Update:
+       *the process is simialr to Initialization except the thing that existing database tables are not dropped and data loss willnot occur.
+  *Both can be executed from the command line platform%ant initilaize and platform%ant update system.
+                                              Dtenant=<mytenant>           Dtenant=<mytenant>
+											  Dconfigfile=config.json       Dconfigfile=config.json
+  *Both can salso be invoked by using HAC.
+Introducing SAP Commerce installer:
+ *SAP Commerce Installer is a gradle based project written in groovy.A Fully audited manual installation is recommended .
+ *An automated script called Recipe is used to install  Sap Commerce with desired build structure and configuration.eg.b2c accelarator ,telco accelarator or datahub.
+ *The Recipe will include
+   *Setup,initialize and start.
+   *Calls to required plugins
+   *The local properties config
+   *Required Extensions
+   *Database configuration
+   *Web archives
+   *App server setup
+ *The commands needed to install Sap commerce in ,
+                       Mac                                              Windows
+			       ./install.sh-r recipe_demo                         install.bat-r recipe_demo
+	To Initialize   ./install.sh-r recipe_demo initialize              install.bat-r recipe_demo initialize
+	To Start:	   ./install.sh-r recipe_demo  start                  install.bat-r recipe_demo start
+
+Spring features in Sap Commerce:
+*Sap Commerce as a whole is complex but not monolithic so it can divided into parts and combined as a whole for which spring helps in managament,configuration .
+*Spring technologies such as dependency injection,springmvc ,spring security and spring transaction managamentis employed here in sapcommerce.
+				   

@@ -1,0 +1,71 @@
+30/12/22
+Facades:
+
+Facade Layer:
+
+	*When an option is clicked in the webpage, the control goes to controller,then control goes to facade layer like an interface and implementation,then it goes to number of services
+	
+	  and with the help of data access object,crud operations in database are done and returned to facadelayer and converted into data transfer object and then data to be shared with jsp page are given using
+	  
+      jsp is given through dto.	  
+
+		public class SomeFacadeImpl implements SomeFacade
+        @
+		Resource
+		private SomeService someService;
+        @
+		Resource
+		private AnotherService anotherService;
+
+		public SomeData doSomething()
+
+	   Model items returned by underlying services 
+	
+	   SomeModel soneModel = someService.doThis(); 
+	
+	   Another todel anotherModel = anotherService.doThat();
+
+	   //Data Transfer Object (DTO) 
+	
+	  SomeData someData;
+
+      // Conversion from SomeModel and AnotherModel  into SomeData goes here
+
+	  return someData;}}
+	  
+DTO management:
+
+	DTO management is made flexible in sap commerce using Bean generation process.
+	
+	An extension is created and bean is defined .In sap commerce ,an extension can be dependent or can extend from many extensions.Using regular inheritance process here makes the 
+	process tedious.
+	
+	Instead beans.xml file and items.xml files are used to make the process of DTO managment easy and flexible.
+	
+Data Coversion:
+
+	The process of conversion of Data models into Data Transfer objects  can be made flexible in sap commerce using Populators.
+	
+	We can create a populator by creating a class that extends Populator Interface and defining the corresponding beans for that in spring.xml file.
+	
+	The data support is provided from items.xml file.
+	
+	We need not create all properties needed for a particular class in a class.Sap commerce provides built in out of the box classes using which we can do it flexibly.
+	
+Commerce Facades Extension:
+	MOst facades in this extension provides data transfer objects.These DTO's are designed to be used in accelarator storefront or mapped in xml or json format for use in 
+	webservices.
+	
+	The commercefacade extension provides facade objects that invoke high level functionality .
+	
+	This functionality includes:
+
+	Retrieving product information. The amount of information returned can be controlled by passing parameters that limit the DTO to a subset of the product's data 
+	suitable for a particular context,  eg. displaying only gallery images, summary data, reviews, or stock info
+	
+	Adding a product to a cart.
+	
+	Adding delivery address to checkout.
+	
+	posting preview.
+	

@@ -1,0 +1,111 @@
+27/12/22
+Product Content Management:
+*If we want our customers to sell their products,we have to categorize the product and its contents.
+
+*The structure in which the products are organized in sap commerce.There is a product catalog may contain several catalog versions.
+
+*Under the catalog versions,there will be many categories under category,there will be products .
+
+*We can do product and content managements in the products and we can buy these products.
+
+*The category itself will have several parent categories and products will have parent categories.
+*We can view through the catalog and its corresponding catalog tree,category.products in productcockpit perspective in backoffice.
+*The version in which the product managers work is called staged version.
+*This version is meant to work in a working environment so that products or categories of staged version will not be shown in the storefront.
+*When the changes are made ready to be visible for the customers,a synchronization process has to be done.
+*It will refelect all the differences made in the given scope into the online version of the catalog.
+*Synchronization reflects all the catalog changes done from the source version into target version.
+*Synchronization process is always executed by Cronjob.
+* it can be either triggered manually or scheduled, both for single or for recurring executions.
+*In terms of scope, the synchronization process can consider an entire catalog version, or selected categories, with all that is below them, or just even selected products.
+ 
+ *Product Modeling
+
+1. Classification
+
+ allows your product attribute sets to be altered frequently or dynamically
+
+2. Basic Product Variants
+
+best for catalogs where your products' attribute sets rarely change
+
+3. Multi Dimensional Product Variants
+
+provides more flexibility in defining attributes exercise focuses on classification and multi-dimensional product variants
+
+4. Configurable Products
+
+provides information as user input to complete the purchase flow configurable products will be covered in live sessions
+
+
+*Content Management
+
+*Classification allows business users to dynamically assign product attributes based on a product's location in the product catalog hierarchy Because it is dynamic, a classification system can be modified by business users on a live system and doesn't require the assistance of a developer.
+
+
+Classification - Key Facts
+
+
+*Classification simplifies management of frequently-changing product data -related products gain the attributes defined for all classification categories above it in the hierarchy
+
+*Classification system is independent of product catalogs
+
+
+* Multi-classification is supported
+
+DIfference between Classification System and Type System:
+
+ClassificationSystem:
+
+*Created from Classification System (of Classification Categories)
+
+*Dynamically defined in Backoffice
+
+*-no ant build or system update is involved Cost in terms of performance (implemented via complex set of relations)
+
+*Accessible through navigating SAP Commerce API
+
+*Not easily accessible via FlexibleSearch
+
+*-(dynamic definitions not "knowable" at build time)
+
+Type System:
+
+*Defined in -items.xml file
+
+*Changes require build, restart, and re-deployment More efficient and simpler
+
+.* Statically defined, and "knowable" at build time.
+
+*Should be used for attributes that belong to most items (e.g. height, width) or for attributes that are Item references (e.g. reference to Media)
+
+
+Basic Product Variants and Multi-Dimensional Product Variants:
+
+In general, product X variants are products of identical design and functionality, but with different size, color, etc. For example, a base product "T-Shirt" has two color variants:
+ black and white.
+ 
+But first of all, in SAP Commerce, you need to distinguish between a base product and a variant product. Let's open the product cockpit in the backoffice, and do a search for "M25687" You can 
+see that several results are returned Specifically, a base product called "T-Shirt Men Playboard Skull SS" is identified by the single gray cuboid, while the variants of the base product are identified by a multi-cuboid icon in the status column.
+So, what exactly does this mean? In SAP Commerce, product variants simplify the process of managing your products by allowing you to create variant products related to a base product
+Variants are intended to cover a small number of variations from a base product, e g. different colors, sizes, or fits. To create product variants, you need to first create a base product and set a variant type on that base product. Then you will be able to create variant products based off the base product. Base products that have variants only exist to facilitate the creation of those variants, because you wouldn't want to sell jeans without a size. This means, if you are using variant products the base product cannot be purchased
+
+
+
+The VariantProduct type is used to select style, size, color, etc., but in a hierarchical way. And actual purchasable Stock Keeping Units, or SKUS, correspond to the selected Variant Product on the lowest level. For example, you can see that the base product here is the Men's short sleeve shirt
+It is viewable, but not purchasable, on the storefront. I can select the intermediate style variant black But it is still not purchasable Only finally, when I select the size, eg small, can I then purchase this item, namely a small black shirt
+From a technical perspective, the implementation of basic variant products has the following structure. A regular product has its variants if the variants property is not null. And all those variants are of the type Variant Product, in this example, StyleVariantProduct. The two styles, Red and Blue are on the next level. And each of those has a collection of next-level variants, this time of the type SizeVariantProduct
+And finally, the blue style variant product has three next-level variants that correspond to 3 sizes small, medium and large. Since this is a two-tier variant model, the second variant type has a null value for its variantType property, and an empty collection for its variants property
+
+
+ We have already learnt about basic product variants But SAP Commerce offers an additional approach to modeling product variants for more complicated cases. 
+This basis of this modelling approach are known as multi-dimensional product variants. To support this approach, we introduce a new type called GenericVariantProduct, which extends VariantProduct.
+Following this approach, each GenericVariant Product is associated with a base product and becomes the purchasable stock keeping unit. The properties used to differentiate one SKU from another will be determined by VariantCategories and VariantValueCategories, both of them extend the Category type. We can think of VariantCategories as attributes by color and size. And the VariantValueCategories as their corresponding attributes, like red or large.
+Let's consider a base product called Oxford Shirt, belonging to the normal category Shirts Out-Of-The-Box we can use the three VariantCategory items that will serve as selector properties for the customer to narrow the selection to the GenericVariant Products for that Product. For example, 3 VariantCategory items: Color, Size and Material are assigned directly as supercategories of the Oxford Shirt product
+
+Variants
+Note that color serves as the first level variant selector, size as the second, and material as the third. In order to define the available choices for each Variant Category, Variant Value Categories are assigned as children of variant categories, in the order given by their sequence number property. In this example, Color has Red, Blue and Green and each variant value category has a sequence number, indicating the order in which it will be displayed. Similarly, size has two choices, Small and Large And Material can be either Silk or Cotton.
+Finally, we can create GenericVariant Product. In our example, it's an Oxford Shirt because it is associated with our Oxford Shirt product through its baseProduct property. Now we can put the VariantValueCategory items together with the generic variant product We assign Blue, Large, and Cotton as the GenericVariantProduct's supercategories. With this assignment, the generic variant product becomes a Blue Large Cotton Oxford Shirt
+Let's also take a look at our sample B2B Accelerator shop. This pair of shoes has color Black, fit M, size 5 But how do the property values get assigned?
+Let's take a look at the product in backoffice. To illustrate the multi-dimensional product approach, I'll switch to the Category System tab. As you can see, the product is assigned to 3 VariantValueCategories, which correspond to the product's size, fit and color displayed on the storefront.
+
