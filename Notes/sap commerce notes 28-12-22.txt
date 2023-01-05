@@ -85,7 +85,7 @@ ImpEx Script for Export:
 
   ""select (pk) from (Product) where {code} like '%happy%'""};"
   
-  Launching an Export:
+  Launching an Import:
   
    In the Backoffice
 

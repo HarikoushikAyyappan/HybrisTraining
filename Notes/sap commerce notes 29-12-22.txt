@@ -55,9 +55,7 @@ Services:
 
 	The JTA UserTransaction interface is not provided
 	
-	SAP Commerce Cloud currently supports two ways for the service layer to interact with the persistence layer.
- 
- Service layer Direct:
+	SAP Commerce Cloud currently supports two ways for the service layer to interact with the persistence layer,
 	
 	*Jalo is our legacy mechanism and is still the default at this time to support backward compatibility.
 	
@@ -66,7 +64,7 @@ Services:
   Enabling SLD Persistence:
 
 	Globally, by setting persistence legacy.mode property to false (not recommended)
-	WE hsould note that  the property is true by default
+	WE should note that  the property is true by default
 	
 	Just for the current session context, using the API
 		Persistenceutils.dowithSLOVersistence()-> { Final TitleModel title=modelService.create(Titledel.class); title.setCode("foo");
