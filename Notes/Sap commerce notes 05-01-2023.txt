@@ -1,0 +1,18 @@
+05/01/23
+Extensions
+    Architecture of SAP Commerce is modular .
+
+    New business logic is developed in separate, function-specific modules called extensions.
+
+    An extension is an encapsulated piece of SAP Commerce functionality,
+
+    An Extension  can contain business logic, type definitions, a web application, and back-office configuration functionality.
+
+    Depending on your business needs, your solution will have a varying number of extensions.
+
+    The created extensions will be  wired into the core SAP Commerce platform via the Spring dependency injection model.
+
+    SAP Commerce has a  number of extension templates,
+
+    There is an ant-based tool (called extgen) for generating new extensions based on these templates.
+
