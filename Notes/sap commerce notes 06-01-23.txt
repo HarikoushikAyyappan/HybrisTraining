@@ -1,0 +1,441 @@
+06/01/23
+items.xml
+
+    The items.xml file specifies types of an extension.
+
+    It is the xml representation of database.
+
+    By editing the items.xml file, we can define new types or extend existing types.
+
+    In addition, we can define, override, and extend attributes in the same way.
+
+    The items.xml is located in the resources directory of an extension.
+
+    The items.xml files are prefixed with the name of their respective extension in the form of extension name-items.xml.
+
+    Structure of items.xml file:
+        <items 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        	xsi:noNamespaceSchemaLocation="items.xsd">
+
+        	<atomictypes>
+        	...
+        	</atomictypes>
+
+        	<collectiontypes>
+        	...
+        	</collectiontypes>
+
+        	<enumtypes>
+        	...
+        	</enumtypes>
+
+        	<maptypes>
+        	...
+        	</maptypes>
+
+        	<relations>
+        	...
+        	</relations>
+
+        	<itemtypes>
+        	...
+        	</itemtypes>
+        </items>
+    The items.xml file wiil be validated against an XSD file (items.xsd),so the order of type definitions must be same as the order given above.
+
+    During  SAP Commerce build, the build process confirms  that every extension's /resources directory contains a copy of a main XSD file (items.xsd).
+
+    The main file allows SAP Commerce to validate the extension's items.xml file against the main items.xsd file.
+
+    The build process also makes sure that the items.xml file is valid and does not contain any error.
+
+     if your extension's items.xml doesn’t conform to the items.xsd, the extrension will not be compiled.
+
+     Adding Types and Attributes:
+
+        There are two methods to add an attribute to existing types.
+
+        *Creating a subtype and adding the attributes to the subtype
+        *Adding the attribute to the type directly
+
+     Creating Subtype and adding Attribute to the subtype:
+
+        This  method is recommended by SAP as it keeps SAP Commerce's core types untouched.
+
+        On the Jalo Layer, we also have an individual Java class available where we can implement our business logic.
+
+        Example:
+        <itemtype code="MyProduct" autocreate="true" generate="true" extends="Product" jaloclass="org.training.jalo.MyProduct">
+        	<attributes>
+        		<attribute qualifier="oldPrice" type="java.lang.Double" generate="true">
+        			<persistence type="property"/>
+        			<modifiers read="true" write="true" optional="true"/>
+        		</attribute>
+        	</attributes>
+        </itemtype>
+
+        When the value of the autocreate element to true, which lets SAP Commerce create a new database entry for this type
+         at initialization/update process.
+
+        Setting the autocreate modifier to false causes a build failure.
+
+        The first definition of a type has to enable this flag.
+
+        Setting the generate modifier to true results in Java class files being generated for this type (additional details).
+
+        Setting the generate modifier to false results in no Java class file being generated for this type.
+
+        It there is no  Java class file available then we will not be able to implement a custom business logic (such as getter and/or setter methods) for the type.
+
+        we have to use the supertype's business logic implementation.
+
+        This method is discouraged by SAP unless we know the implications and side effects well and we know that you we do not have  alternative to taking this manner
+        Example:
+        <itemtype code="Product" autocreate="false" generate="false">
+        	<attributes>
+        		<attribute qualifier="oldPrice" type="java.lang.Double" generate="true">
+        			<persistence type="property"/>
+        			<modifiers read="true" write="true" optional="true"/>
+        		</attribute>
+        	</attributes>
+        </itemtype>
+
+        This manner isn’t recommended by SAP for these reasons:
+
+        You create a direct dependency to an SAP Commerce type.
+
+        Jalo Layer: The generated methods for the attributes are written into your extension's manager,
+        but not into the corresponding type class.
+
+        In essence, this means that we have to address your extension's manager class to set values for these attributes.
+
+        As the type basically exists already, we need to set the autocreate modifier for the type definition to false or it
+        leads to  build failure and the value of  generate modifier is ignored.
+     Redeclaring Attributes:
+
+        we can redeclare an attribute to:
+
+        Change its behaviour. For example, we can add a “unique” flag, or disallow writing.
+        Make the type of the attribute more specific for subtypes.
+
+        We can set uniqueness only for supertype attributes.
+
+        When we add a “unique” flag to an attribute at the subtype level, SAP Commerce ignores it.
+
+        Service Layer:
+
+        The ServiceLayer facilitates item handling through the use of Models.
+
+        A model is a POJOInformation published on non-SAP site -like representation of an SAP Commerce item.
+
+        Models have automatically generated getter and setter methods for attribute values.
+
+        Using the items.xml file in combination with the ServiceLayer is simple:
+
+        we define the data model in the form of types and attributes.
+
+        We call the SAP Commerce's all ant target.
+
+        The models are then generated automatically and are ready for use.
+     Null value decorators in Models:
+        Null decorator expression is a ServiceLayer feature that allows  to customize the behavior of a getter method.
+
+        We can specify a code fragment in an item definition (items.xml) that computes a result instead of returning null.
+
+        This assures that the method never returns a null value.
+
+       This feature is introduced in order to bring ServiceLayer to feature parity with deprecated Jalo-only features that allowed customization of a method body.
+
+       In the following example Abstract Order has an attribute named calculated, and we want to make sure that calling getCalculated() never returns null:
+       Example:
+       <attribute autocreate="true" qualifier="calculated" type="java.lang.Boolean" generate="true">
+           <custom-properties>
+               <property name="modelPrefetchMode">
+                   <value>java.lang.Boolean.TRUE</value>
+               </property>
+           </custom-properties>
+           <defaultvalue>java.lang.Boolean.FALSE</defaultvalue>
+           <persistence type="property"/>
+           <modifiers read="true" write="true" search="true" optional="true"/>
+           <model>
+               <getter default="true" name="calculated">
+                   <nullDecorator>Boolean.valueOf(false)</nullDecorator>
+               </getter>
+           </model>
+       </attribute>
+     Jalo layer:
+
+     Sample Attribute Definition:
+     <attribute qualifier="oldPrice" type="java.lang.Double" generate="true">
+     	<persistence type="property"/>
+     	<modifiers read="true" write="true" optional="true"/>
+     </attribute>
+     Getter and setter methods for the corresponding type class:
+
+     public Double getOldPrice(final SessionContext ctx)
+     ...
+
+     public Double getOldPrice()
+     ...
+
+     public double getOldPriceAsPrimitive(final SessionContext ctx)
+     ...
+
+     public double getOldPriceAsPrimitive()
+     ...
+
+     public void setOldPrice(final SessionContext ctx, final Double value)
+     ...
+
+     public void setOldPrice(final Double value)
+     ...
+
+     public void setOldPrice(final SessionContext ctx, final double value)
+     ...
+
+     public void setOldPrice(final double value)
+     ...
+
+     We can override these method implementations in the nonabstract Java class.
+
+     When using the manner of Adding Attributes to a Type Directly,
+     the getter and setter methods for the newly defined attributes are generated into our extension's manager.
+
+     By consequence, we have to implement custom getter and setter method logic in our extension's manager.
+
+     For a new implementation, try to avoid this approach and use a ServiceLayer -based approach instead.
+
+     As the SAP Commerce is delivered as a precompiled binary release without source code, adding getter and setter methods to a SAP Commerce class directly isn’t possible.
+
+     By consequence, we have to implement the getter and setter methods in your extension's Manager class.
+
+     However, regardless of the actual location into which getter and setter methods for attribute values are generated, the mechanism follows the same basic rules.
+
+     Setting the generate modifier on an attribute definition to false results in no getter and setter method being generated whatsoever.
+
+     In other words: Setting generate to false results in no automatically generated getter and setter methods.
+     Example:
+     <attribute type="java.lang.String" qualifier="myAttribute" generate="false">
+
+     Setting the generate modifier on an attribute definition to true results in getter and setter method being generated,
+     depending on the values of the modifiers tag on the attribute definition.
+
+     Setting the read modifier to true results in a getter method being generated for this attribute
+
+     <attribute type="java.lang.String" qualifier="myAttribute" generate="true">
+     	<modifiers read="true" />
+     </attribute>
+
+     Setting the write modifier to true results in a setter method being generated for this attribute
+
+     <attribute type="java.lang.String" qualifier="myAttribute" generate="true">
+     	<modifiers write="true" />
+     </attribute>
+
+     Setting Custom Types for New Coloumns:
+
+     SAP Commerce can change the type of database table columns during an update process.
+
+     Technically, this runs ALTER statements on the respective database table column and  changes the persistence setting.
+
+      Example: we can modify a database table column from CHAR(255) to VARCHAR(255) etc.
+
+      It isn't possible to change the types of already existing database table columns by updating SAP Commerce.
+
+      We can, however, set a required type and see it  for a new table or a new column that you add to items.xml before you perform system update.
+
+      Sap commerce does not  allow changing column types on existing tables. To prevent breaking the existing data, the database admin should decide on the correct way of introducing required changes.
+
+      Despite the fact that java.lang.String sets a default type for columns,
+      we can have SAP Commerce modify a column type of a database table by modifying or explicitly specifying the value for the <columntype> element in the attribute definition in your $extensionname-items.xml file:
+      Example:
+      <attribute qualifier="MyAttribute" type="java.lang.String">
+      	<description>Identifier of the store.</description>
+      	<modifiers read="true" write="true" search="true" optional="false" />
+      	<persistence type="property">
+      		<columntype>
+      			<value>VARCHAR</value>
+      		</columntype>
+      	</persistence>
+      </attribute>
+
+      There are two ways the database column type can be set:
+        By specifying the database column type in the items.xml file, such as:
+            <persistence type="property">
+        	<columntype>
+        		<value>VARCHAR</value>
+        	</columntype>
+            </persistence>
+        We can also define this in more detail by specifying database systems such as:
+        <persistence type="property">
+            <columntype database="oracle">
+                <value>CLOB</value>
+            </columntype>
+            <columntype database="sap">
+                <value>NCLOB</value>
+            </columntype>
+            <columntype database="sqlserver">
+                <value>nvarchar(max)</value>
+            </columntype>
+            <columntype database="mysql">
+                <value>text</value>
+            </columntype>
+            <columntype>
+                <value>varchar(4000)</value>
+            </columntype>
+        </persistence>
+
+      By omitting the database column type in the items.xml file, such as:
+      <persistence type="property"/>
+
+      This causes the database  stick to default values
+
+     Overriding Coloumn Types:
+         We can override a database column type, whether it’s defined explicitly or implicitly.
+
+         The property that allows you to override an XML configuration, uses the persistence.override.<typeCode>.<qualifier>.columntype=<columnTypeValue> naming convention.
+
+         Platform checks whether a column type definition is given for typeCode and qualifier in the configuration files first.
+         If not present, it is  read from items.xml.
+         Example:persistence.override.Catalog.id.columntype=varchar(400)
+
+     Primitive Types:
+
+     It is  possible to use primitive Java types instead of the related wrapper classes.
+
+     As a result,the jalo layer still uses the related wrapper classes, but the attribute definition gets a default value automatically (same default as Java uses).
+
+     This ensures that you can change the type to a primitive class without any migration on jalo layer.
+
+     At the servicelayer, the primitive type is used and the need for handling null values disappears.
+
+     Example:
+
+     <attribute qualifier="myAttribute" type="java.lang.Boolean">
+     	<modifiers read="true" write="true" initial="true" optional="false"/>
+     	<persistence type="property"/>
+     </attribute>
+
+     Thinking of the null value situation. If we want to exclude the possibility of null values (by specifying a default value) then you can convert as below,
+     <attribute qualifier="myAttribute" type="boolean">
+     	<modifiers read="true" write="true" initial="true" optional="false"/>
+     	<persistence type="property"/>
+     </attribute>
+
+     System Update Possibilities:
+
+     Enumeration, Map, Collection:
+
+     Creating- Works
+
+     removing, changing- Works but cleanup necessary
+
+     Adding values-   Works
+
+     Removing values, changing values-Doesn’t work
+
+     Changing modifiers-Works
+
+     Relation:
+
+     Creating-Works
+
+     removing-  works but cleanup necessary
+
+     changing- manual remapping needed, for (1-n) cleanup doesn’t remove created instances, for (n-m) it does
+
+     change partOF attribute- works
+
+     source/target attribute name change-  works, cleanup necessary
+
+     Type:
+
+     Creating- Works
+
+     Removing- Works if type is removed from composedtypes and attributedescriptors tables. Instances of types need to be removed, too.
+
+     Changing Code, Deployment, Typecode attr in itemtype-Works if all three are changed, cleanup removes orphaned type
+
+     Added Element to Inheritance Path-Works
+
+     Removed Element from Inheritance Path- Works, after update it’s possible to add orphaned attribute but after cleanup it isn’t possible
+
+     Inheritance path change to GenericItem-Works, cleanup necessary
+
+
+     Attribute:
+
+     Creating- Works
+
+     Removing-Not working. Cleanup doesn’t recognize orphaned types
+
+     Changing- Old attribute can still be added. Can’t use cleanup as it doesn't recognize any orphaned type in this scenario.
+      If new attribute is mandatory, expected validator is set
+
+     Changing attribute's persistence qualifier-  Remapping needs to be done manually
+
+     Uniqueness change- Doesn't work - no unique validator is set
+
+     Mandatory change-Works, field is mandatory from now on
+
+     Persistence change-  Works
+
+     from Jalo to Dynamic- some extra implementation has to be done
+
+     Deployment change-If data has to be truncated - not working. If changing to wider data type - works
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
