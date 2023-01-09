@@ -1,0 +1,27 @@
+09/01/23
+Basics of Data Modelling:
+
+    items.xml file plays a main role in data modelling.
+
+    items.xml file will be present in an extension's resources directory.
+
+    items.xml file is defined as per the structure of items.xml file.
+
+    items.xml file names are prefixed with respective extension name.
+
+    In core extension, it is available as core-items.xml file where all Core itemtypes like Order,Product,Employee,Cus
+    tomer and User are defined.
+
+    In trainingcore extension, it is available as trainingcore-items.xml file.
+
+    Items.xml file is always validated against items.xsd.Hence we have to maintain the above order of elements in items.xml file.
+    If we do not maintain the above order in items.xml file, build will be failed.
+
+    we can define new item type in items.xml file using code ,deployment and all the attributes for that item type.
+
+    Items.xml file is evaluated in one pass unlike impex which is multi pass processed.Because of single pass,we need
+    to specify the item types in the order of inheritance.
+
+    More abstract types has to be defined at the beginning of the items.xml file
+
+    More concrete types has to be defined at the end of the items.xml file
