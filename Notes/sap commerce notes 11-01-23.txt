@@ -1,0 +1,15 @@
+11/01/23
+Backoffice Tour:
+
+    Backoffice has the possibility to change language while doing login.
+
+    In Topright corner ,It has options to logout,enabling and diabling locale ,Monitor workflows,process etc.
+
+    In top left corner, It has options to swich between Administrative cockpit,productcockpit,integration UI,Adaptive search etc.
+
+    Administration Cockpit:
+        It has left and Right Layout.The left layout groups such as Catalogs(under which Products comes),Users,Media,Order Mangement ,
+        Price settings,Internalization,Marketing etc
+        clicking on the gropus allows to search the groups based on various filters and edit the same.
+
+        Clickng on F4 (Fn+F4 in Mac) lets into Application Orchestrator using which we can design/edit the UI part of the backoffice
