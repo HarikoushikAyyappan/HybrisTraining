@@ -1,0 +1,3 @@
+Front end and view
+Reference:
+https://help.sap.com/docs/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/aa417173fe4a4ba5a473c93eb730a417/96ab213b15384646a96331bfdb4bf735.html?version=v2205

@@ -1,0 +1,55 @@
+Debugging in IntelliJIdea:
+
+    Debugging is the process by which we check the issues in our code to detect them and find a proper way to resolve them.
+
+    Line Break points are points which appear to the left of the code.If the breakpoint is kept at line n,the flow is stopped at line n-1.
+
+    There is a button called ResumeProgram .If we keep the breakpoint in a particular line and keep another breakpoint in another line.It
+    makes the program to execute between two breakpoints.
+
+    There is a button called stepover.clicking on it the control goes to the next line.
+
+    If there is a method call,the Stepinto button helps to get into the method and if we want to get out of that method stepout button is used.
+
+    If there is a cascaded method call,smartstep option is used.
+
+    Move to cursor option helps to jump over to a particular line and force move to cursor ignores the breakpoints in between.
+
+    Variable section consists of all the variables used in the code. The Watch option in variable section is used to evaluate complex expressions
+    which may be not even the part of the codefile itself.
+
+    Evaluate Expression is used to evaluate a single object or variable and it gives the value of it
+     whereas Watchover remains till the whole program execution.
+
+    We can filter the arrays and collections in variable section or Watch section by filter option by providing a criteria to filter.
+
+    Conditional Breakpoints are helpful in loops particularly.we can specify a condition by right clicking and clicking on filer so that
+    we can fidn out at which point the error is occuring.
+
+    Exception breakpoints are used in times when an exception is occured.we dont need to specify a partivular breakpoint if there is an exception
+    say classcast Exception,by right clicking and clicking on view breakpoints ,we can add a particular exception that has occured an find out
+    where the code went wrong.And we can click a checkbox called All exceptions and uncheck a checkbox called Caughtexceptions so that we can find
+    out the cause of all exceptions.
+
+    Method Breakpoints:When we declare a method ,we can keep breakpoint in the method declaration and we can create a new method breakpoint by
+    clicking on view breakpoints and creating a new method breakpoints by providing the correct method and class name.
+
+    Action Breakpoints:Sometimes we may need to evaluate something during the debugging session.By pressing shift and clicking left to the line creates
+    action breakpoints are created.We can either notify that the program has hit the breakpoint or we can evlauate it by clicking on the corresponding
+    checkboxes available.
+
+    We can manage the breakpoints by adding ,removing ,enabling or disabling using the options available in view breakpoints.
+
+    Force return: We can use Force Return to return an arbitrary value or we can return an exception by selecting the frame which is debugger
+    ,right clicking on it and clicking ForceReturn.
+
+
+
+
+
+
+
+
+
+
+
