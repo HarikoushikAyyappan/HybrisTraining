@@ -1,0 +1,73 @@
+Debugging in Intellij
+
+Field Watch points:
+
+    Sometimes some instance variables return unexpected results.In this situations,it becomes important to know when a variable is accessed
+and when it gets a value.
+
+When we click to thr left of an instance variable defined in a class, the breakpoint looks different from a normal breakpoint.
+
+Clicking on an instance variable,and right clicking on it the tab which we earlier saw while adding conditional breakpoints comes, In that
+we should make both fieldaccess and field modification checkbox ticked.And we can make use of it in this scenarios.
+
+Class Level Watches:
+    Say we have an List of a Model Class instances,we can click breakpoint on the list variable and right click on it and
+click new class level and we can also put conditions in a particular model class variable.
+
+Drop Frame:
+    It is a kind of rewind feature which will be helpful if we missed out an important point or the step we need is toofar
+while debugging.we can do it by clicking on the frame available in debugger section ,right click on it and select Drop Frame.
+
+ADVANCED :
+
+Lambda Expressions and Stream chain operations:
+    Say If we have a cascaded lambda expression,we can set breakpoint on the particular line,
+and we can select all the lambda expressions or select anyone expression to execute and we can evaluate and we can even filter those based on
+criteria.Stepover button also plays a role here as per requirement .When we debug any stream operations, a button called TraceCurrentChain
+becomes active and we can view how the whole the operation process has been executed in a visual manner.
+
+ControlStepping:
+    IntellijIdea has the feature to control and configure the sleeping behaviour during debugging session.
+
+    Click on File->settings->Build,Execution and Development->Debugger->Skipping in IntelliJ.
+
+    By Default ,there will be some methods like synthetic methods and class loaders will be skipped.We can clicl the +button to add the stuff we want
+    to skip.Say if we want to skip the spring packages we can add org.springframework.* in there.
+
+On Demand CustomDatatype renderers:
+    IntelliJ allows to customize the way in which the objects are displayed.File->settings->Build,Execution and Development->Debugger->DataViews
+    ->JavaTypeRenderers.We can givename to the renderer and specify the object that is to be rendered.There will be two options using which we can customize
+    Or we can customize according to our requirement in "use the following expression"  textbox. We can also tick OnDemand checkbox if we want to
+    render the object when we need only.
+
+    We can mute the renderers and enable the renderers according to our need.
+
+Debugging SpringBootWebservices:
+    Like the same way we debug,we can debug springboot webservices also.
+
+RemoteDebug SpringBotWebServices:
+    OPening command prompt in target folder of the webapplication,we should run the command by specifying the transport socket and address.
+
+    After that,we can enter into the application through IntelliJ and clicking on Run from lefttop we can click on Remote and we can remotedebug
+    the application.
+
+Attaching Custom Labels to Jvm Objects:
+    WE can give labelling to the objects by right clicking on the objects in the frame and clicking on Mark and we can give a name.
+
+    It will be helpful in objects involved in iterations and it helps in applying conditional breakpoints also.
+
+Debugging MavenWebApp without Tomcat server:
+    We have to add maven install plugin and and Tomcat plugin.
+    We have to add configuration as we noramlly do tomcat configuration.we have deploy directory of maven and in next box tomcat version:run has to
+    be given.
+
+
+
+
+
+
+
+
+
+
+
