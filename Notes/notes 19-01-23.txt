@@ -1,0 +1,29 @@
+Debugging:
+
+Remote Debugging Webproject with Tomcat:
+    We have to create a war file by typing mnv poackage in console next to project name and place the war file in tomcat's webapp folder.
+
+    We have to create a bat file and save it in webapp folder of Tomcat Installation directory.In the bat file,we have to set cataline as tomcat's
+    location in the computer,set environment variable of java and path of it,set transport socket and port address and we can run thr script.
+
+    We should configure the tomcat in web project.
+
+    Key Points to follow while Debugging:
+
+        Check the requirement thoroughly.Starting point is important.We should know what is the input and what is the output.
+
+        In case the program/code shows any kind of exception,we should read twice or thrice what is happening and we should move on to the
+        correct line where the exception is occured.
+
+        Before we apply any sort od code change/change Understand why and how the error was occured and understand the root cause of it.
+        Root cause analysis is always best.
+
+        Try to understand the logic fully .If not possible ,atleast to a high level.
+
+        keep in mind scenarios where conditional/exception breakpoints is applied because it reduces the debugging effort in many scenarios.
+
+        Do not continue debugging for long hours.If stuck for long,take a break and start fresh but always note doen what we tried earlier.
+
+        Once the issue is fixed,check thoroughly that the fix does not break anything else.
+
+
