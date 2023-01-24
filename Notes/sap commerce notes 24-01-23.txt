@@ -1,0 +1,89 @@
+24/01/2023
+Occ Webservices
+OCC Extensions allow us to extend the functionality of OCC without the process of addon installation.
+
+OCC extensions depend on commercewebservices, and many existing OCC addons have corresponding OCC extensions with the same business logic and functionality. OCC extension names end with occ, such as b2bocc, for example.
+
+Additional features of OCC extensions include the following:
+
+OCC extensions don't require any additional commands for installation. They are imported into the Spring web context of commercewebservices. There’s no need to copy files there.
+OCC extensions have a different directory structure to OCC addons, despite having the same logic as an OCC addon.
+
+An Occ extension has a standard directory structure but it does not contain web part as it is not an web extension.
+
+Occ Extension contains same files as Occ Addons but they are placed in different directory.
+
+Occ Extension is not a web extension and it does not contain web context .It extends the functionalities of occ by adding some more RESt controllers,
+spring beans and localized messages.
+
+Rest Controller classes and other extension classes are located in main/src directory.
+
+In the Spring Xml Configuration an important statement is there which imports the beans from all occ extensions.
+   <import resource="classpath*:/occ/v2/*occ/web/spring/*-web-spring.xml"/>
+
+The XML configuration file import statement containing bean definitions must meet the following requirements:
+
+The configuration file must be located in the /resources/occ/v2/<*occ>/web/spring directory, where <*occ> points
+to a directory with the same name as the OCC extension that ends in occ, for example xyzocc.
+
+The name of the configuration file must end in -web-spring.xml.
+
+Overlapping Paths:
+
+when an occ addon installation is used,it is possible to override controller endpoints.
+
+By using @RequestMappingOverRide,a controller endpoint of an addon can override the endpoints of other extension.s.
+
+For an occ extension,all controller endpoints must have unique path.
+
+Any endpoints that are in conflict with existing endpoints must be changed to have a unique path.
+
+The configuration property occ.rewrite.overlapping.paths.enabled can be used as a solution.
+
+When this property is set to true, the specified extension has to provide a unique path for its controller endpoints,
+that can be in conflict with endpoint in other extensions.
+
+ For example: /<baseSiteId>/users/<userId>/orders becomes /<baseSiteId>/orgUsers/<userId>/orders
+ Site Channel Restrictions:
+
+ There is a restriction that prevents inappropriate access from one site to the endpoints of another site.
+
+  For example, it can prevent calling B2B endpoints in context of B2C sites.
+
+  We can apply the restriction on controller endpoints by using the annotation.
+
+   This annotation contains a configuration property used to read a set of allowed site channels for this endpoint.
+
+   OCC AddOn Converter :
+
+   It is a command line interface tool used to convert Occ Addons to Occ extensions.
+
+   The OCC Extensions Architecture allows you to extend the functionality of OCC without installing any OCC AddOns.
+
+   As a result, OCC AddOns need to be converted to OCC Extensions
+
+   To use OCC AddOn Converter, navigate to the <HYBRIS_HOME>/build-tools/occ-addon-converter directory.
+
+   You can use the script directly from the source code or run it as a packed JAR file
+
+   Using OCC AddOn Converter as a JAR File:
+
+   For Microsoft Windows systems:
+
+   gradlew.bat jar;
+
+   java -jar build\libs\occ-addon-converter.jar ^
+   --addondir "C:\Projects\xyoccaddon" ^
+   --extdir "C:\Projects\xyzocc" ^
+   --stepsdir "C:\Projects\customSteps" & :: stepsdir is optional
+
+   For Unix-related systems (such as Linux or Mac OS):
+
+./gradlew jar;
+
+java -jar build/libs/occ-addon-converter.jar \
+--addondir "/Projects/xyoccaddon" \
+--extdir "/Projects/xyzocc" \
+--stepsdir "/Projects/customSteps" # stepsdir is optional
+
+
