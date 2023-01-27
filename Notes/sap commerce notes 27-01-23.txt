@@ -1,0 +1,256 @@
+27/01/23
+
+Occ Addon Convertor Continuation:
+
+Using AddOn Converter from the Source Code:
+
+For Microsoft Windows systems:
+gradlew.bat run --args="--addondir ""C:\Projects\xyoccaddon"" --extdir ""C:\Projects\xyzocc"" --stepsdir ""C:\Projects\customSteps"""
+
+For Unix-related systems (such as Linux or Mac OS):
+
+./gradlew run --args="--addondir \"/Projects/xyoccaddon\" --extdir \"/Projects/xyzocc\" --stepsdir \"/Projects/customSteps\""
+
+Explanation of the parameters:
+
+xyoccaddon specifies the name of the OCC AddOn.
+
+xyzocc specifies the name of the new OCC Extension. The names of OCC Extensions need to end with “occ”.
+
+addondir is a parameter that specifies the directory of the OCC AddOn.
+
+extdir is a parameter that specifies the directory where the new OCC Extension is located after the conversion. The directory is erased every time the converter is used.
+
+stepsdir is an optional parameter that specifies the directory with custom steps that you can provide to apply additional changes.
+
+Script Architecture:
+ Occ Addon Convertor loads and runs the groovy script that carry out the conversion.
+
+ The server need not be turned off during conversion process.
+
+ The Convertion includes moving,editing and renaming files.
+
+ If the conversion involves additional steps use --stepsdir flag to specify the directory with our customsteps.
+
+  When the script is run,default files and custom files are logged.
+
+
+ Filename Convention:
+
+ Occ AddOn Convertor expects step filenames to start with Step_.
+
+ Number the steps according to the order you want them to run.
+
+ Regardless of whether the step is in the main script or custom steps,the script orders them by filenames so that
+ Step_15_Foo.groovy is run between the steps Step_10* and Step_20*.
+
+Writing a Custom Step:
+
+The Groovy Binding mechanism injects the two implicitly defined variables at run time,
+
+<ant> is an instance of AntBuilderObject.
+
+<ctx> is a context object which is used to tell information about a given operation.
+
+The <ctx> variable consists of the following elements:
+
+<ctx.ADDON_NAME> is a String with the OCC AddOn name that is being converted.
+
+<ctx.EXTENSION_NAME> is a String with the target OCC Extension name.
+
+<ctx.ADDON_DIRECTORY> is a String with the directory of the AddOn.
+
+<ctx.EXTENSION_DIRECTORY> is a String with the target directory of the new OCC Extension.
+
+For example, if you want your new OCC Extension to reference packages from a different module,
+use the following step to change the import settings:
+
+ant.echo("Converting: $ctx.ADDON_NAME to $ctx.EXTENSION_NAME")
+ant.replace(dir: ctx.EXTENSION_DIRECTORY, token: 'import com.example.old.occ.module', value: 'import com.example.new.occ.module')
+
+If you add this code to a file that is located in the directory referenced by the --stepsdir flag,
+OCC AddOn Converter replaces import com.example.old.occ.module with import com.example.new.occ.module in all the relevant files of the module.
+
+After Conversion:
+
+When you generate a new OCC Extension, it’s recommended to review the output and run tests against the new extension.
+
+The extension has to be used with the Commerce Web Services module.
+
+You can’t use the newly generated OCC Extension with either the ycommercewebservices extension or OCC AddOn that the extension was generated
+ from.
+
+ Occ Calls Security:
+
+ Occ Calls are secured by a mechanism of Spring security.
+
+ An user who gets the access is called Principal.
+
+ The user need not be real user,It can be a front end application or a mobile application.
+
+ There is a difference between authorization and authentication.
+
+ Authentication means checking the credentials.If the credentials are correct ,the proper roles are assigned to the principal.
+
+ Authorization:It decides whether the principal can perform the given action.It is based on the partcular role assigned to the user.
+
+ A protocol called OAUTH2 is used by Occ to make Authentication and Authorization simple.
+
+ its main purpose is to provide long term access to the pricipal and differentiate security rules depending on type of client application.
+
+ The authorization process takes place separately in two layers:
+
+ HTTP layer
+
+ Service (business) layer
+
+ Each layer applies its own set of rules and constraints.
+
+ Occ User roles:
+
+ Anonymous-A non authenticated principal is provided an Anonymous role by default.
+
+ Clients- Every client application that was authenticated using an OAuth2 token in the client credentials flow is assigned
+          a specific role depending on the client definition. When defining the clients remember to assign either the
+          ROLE_CLIENT or ROLE_TRUSTED_CLIENT to them, because these roles allow client access to the ycommercewebservices extension.
+ Customer-Users who were authenticated using the OAuth2 token in the password flow are assigned a list of roles that are received
+          from a service layer in the same way as it works in the whole application. By default, CUSTOMERGROUP and CUSTOMERMANAGERGROUP
+          roles are used.
+ Guest-Anonymous users who provided their own email address. It can be done by calling /customers/current/guestlogin in v1 or
+       /users/anonymous/carts/{guid}/email in v2. For such users, a built-in GUEST role is assigned.
+
+ Spring security Configuration:
+
+ The OAuth2 Resource Server configuration and other security aspects are defined in the /ycommercewebservices/web/webroot/WEB-INF/config
+ /common/security-spring.xml file and in configuration files specific for webservices version : /ycommercewebservices/web/webroot/
+ WEB-INF/config/v2/security-v2-spring.xml, /ycommercewebservices/web/webroot/WEB-INF/config/v1/security-v1-spring.xml.
+
+ To make Spring Security work, you have to add the springSecurityFilterChain to the web services filter chain as shown below in
+  the configuration for v1 and v2 webservices.
+
+    v1 (/ycommercewebservices/web/webroot/WEB-INF/config/v1/filter-config-v1-spring.xml)
+
+  ...
+       <bean id="commerceWebServicesFilterChainV1" class="de.hybris.platform.servicelayer.web.PlatformFilterChain">
+          <constructor-arg>
+              <ref bean="commerceWebServicesFilterChainListV1" />
+          </constructor-arg>
+      </bean>
+      <alias name="defaultCommerceWebServicesFilterChainListV1" alias="commerceWebServicesFilterChainListV1" />
+      <util:list id="defaultCommerceWebServicesFilterChainListV1">
+          <!-- generic platform filters -->
+          <ref bean="log4jFilter" />
+          <ref bean="tenantActivationFilter" />
+          <ref bean="sessionFilter" />
+          <!-- commerceWebservices filters -->
+          <ref bean="commerceWebServicesBaseSiteFilterV1" />
+          <ref bean="commerceWebServicesSessionAttributesFilterV1" />
+          <ref bean="baseSiteCheckFilterV1" />
+          <!-- Security -->
+          <ref bean="springSecurityFilterChain" />
+          <ref bean="guestRoleFilterV1" />
+      </util:list>
+  ...
+
+  v2 (/ycommercewebservices/web/webroot/WEB-INF/config/v2/filter-config-v2-spring.xml)
+
+  ...
+         <bean id="commerceWebServicesFilterChainV2" class="de.hybris.platform.servicelayer.web.PlatformFilterChain">
+          <constructor-arg>
+              <ref bean="commerceWebServicesFilterChainListV2" />
+          </constructor-arg>
+      </bean>
+      <alias name="defaultCommerceWebServicesFilterChainListV2" alias="commerceWebServicesFilterChainListV2" />
+      <util:list id="defaultCommerceWebServicesFilterChainListV2">
+          <!-- filter that catches and resolves exceptions thrown from other filters -->
+          <ref bean="exceptionTranslationFilter" />
+          <!-- generic platform filters -->
+          <ref bean="log4jFilter" />
+          <ref bean="restSessionFilterV2" />
+          <!-- commerceWebservices filters -->
+          <ref bean="baseSiteMatchingFilter" />
+          <ref bean="commerceWebServicesSessionAttributesFilterV2" />
+          <!-- Security -->
+          <ref bean="springSecurityFilterChain" />
+          <ref bean="userMatchingFilter" />
+          <!-- Matching filters -->
+          <ref bean="cartMatchingFilter" />
+          <ref bean="guestRoleFilterV2" />
+      </util:list>
+  ...
+
+  OCC API Implementation:
+
+    RESTful Implementation  :
+       It provides the user an approach with URL and access control.
+
+    Stateless:
+      OCC does not use sessions. This means the JSESSIONID cookie can be (and should be) ignored. In order to access resources from a
+      particular user, you can follow the URL convention described below (or implement your own).
+
+    Users:
+    User resources are available under the following path:
+
+    https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/...
+
+    Valid userID values
+
+    anonymous
+    Anonymous user.
+
+    ${uid}
+    ID of the registered user.
+
+    Example:
+    GET https://localhost:9002/rest/v2/wsTest/users/username@email.com/addresses
+
+    Carts:
+
+    Cart Resource is available under the following path:
+
+    https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/carts/{cartID}
+
+    Valid cartID values:
+
+    current
+    Represents last modified cart of the specified user.
+
+    ${guid}
+    GUID of the anonymous cart. Works only with an anonymous user.
+
+    ${code}
+    Code of the non-anonymous cart. Works only for registered users.
+
+    All calls related to the particular cart have the same structure that also contains the cart's owner:
+
+    POST https://localhost:9002/rest/v2/wsTest/users/username@email.com/carts/0000012/entries?code=12345&qty=2
+
+    Orders:
+
+    Orders can be accessed for a user or as a global resource for all users, but you need to have the proper rights to view the resources.
+
+    The user orders resource is available under the following path:
+    https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/orders/{orderID}
+
+    Valid orderID values:
+
+    ${code}
+    Order's code. Works only for registered users.
+
+    All calls related to the specific order have the same structure that also contains the order's owner:
+    POST https://localhost:9002/rest/v2/wsTest/users/username@email.com/orders/testOrder1
+
+    This way, you can only access orders belonging to the specified user. You must have the proper rights to do so.
+
+    The global orders resource is available under the following path:
+    https://localhost:9002/rest/v2/{baseSiteID}/orders/{orderID}
+
+
+
+
+
+
+
+
+
+
