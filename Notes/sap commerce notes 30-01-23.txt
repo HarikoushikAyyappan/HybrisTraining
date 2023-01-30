@@ -1,0 +1,377 @@
+30/01/23
+Occ Api Implementaion Continuation:
+
+Valid code values
+${code}
+Order's code.
+
+${guid}
+Order's global identifier.
+
+All calls related to specific order have the same structure containing order's owner.
+
+POST https://localhost:9002/rest/v2/wsTest/orders/1beb1e9f5043ef28aa5f821ada8aeee5a7a40ac4
+
+Access Control
+
+Access depends on roles granted by OAuth2.
+
+Role	                     Description	                                    Rights
+
+ROLE_CLIENT                 Client application (ie)Mobile App)                Can access anonymous user resources
+ROLE_CUSTOMERGROUP          User Authenticated by client application          Can access only its own resources.
+ROLE_TRUSTEDCLIENT          Trusted CLient Application(ie)Adobe CQ5)          Can access all Users and their resources
+ROLE_CUSTOMERMANAGERGROUP   User Manager authenticated by clientapplication   Can access all users and their resources
+                             (ie)pos terminal)
+
+Verbs in RESTful API:
+
+In v2 of Occ Api,some HTTp methods have been redefined to match Restful standard
+
+POST: Create a Resource:-
+
+POST is used to create a subordinate resource which does not exist.As a result,created entity is returned.
+Examples: creating an order or address.
+
+PUT: Update an Entire Resource:
+
+PUT is used to update a complete resource by sending an entity to the URL which points to the particular resource.
+All fields that are missing will be set to NULL or default value.Eg.Updating User Or Address.
+
+PATCH: Update a Resource Partially:
+PATCH is used for partial update.If suppose we want to update any one field of a resource at a time,PATCH can be used.
+PUTting or POSTing a resource causes additional overhead and consumes more bandwidth.Eg.updating user's lastname,editing street name in address.
+
+DELETE: Remove a Resource:
+It is used to remove a resource.Eg.Remove an address or user.
+
+Caching:-
+
+  Overview:-
+    Cache sits between one or more webservers (also known as Origin servers) and Client(one or more clients).It watches the requests come by
+    and saves the responses such as HTML pages ,images and files. If same requests come again,it gets from the collected responses instead
+    of asking the origin server again.
+     Client-Side Caching:-
+      The Webservices common annotation defines @CacheControl annotation which is used to generate cache control header in response.
+      If we want a method or a whole controller to be client-side catched ,we can just annotate @CacheControl at the top.
+      The annotation usage example can be noticed in the ProductsController.java class:
+       ...
+          @RequestMapping(value = "/{productCode}", method = RequestMethod.GET)
+          @CacheControl(directive = CacheControlDirective.PRIVATE, maxAge = 120)
+          @ResponseBody
+          public ProductWsDTO getProductByCode(@PathVariable final String productCode,
+                  @RequestParam(defaultValue = DEFAULT_FIELD_SET) final String fields)
+          {
+           ...
+          }
+      ...
+
+      CacheControl annotation applies to GET and HEAD methods only so it will not affect other methods.
+
+    The @CacheControl annotation work only if CacheControlHandlerInterceptor is added to mvc interceptors.
+    ...
+        <mvc:interceptors>
+            <bean class="de.hybris.platform.webservicescommons.interceptors.CacheControlHandlerInterceptor"/>
+        </mvc:interceptors>
+    ...
+
+  Server-Side Caching:-
+    Spring Cache Configuration:-
+     The Spring cache configuration can be found in the following file: ycommercewebservices/web/webroot/WEB-INF
+     /config/cache-config-spring.xml.
+
+     The caching feature has to be enabled. It can be done using the <cache:annotation-driven> element.
+     This element allows also to define the default key generator and cache manager which will be used for caching.
+
+     The configuration below uses the CommerceKeyCacheGenerator which will be decribed in  <CacheKeyGenerator>.
+
+     The Cache manager is defined with the use of SpringCompositeCacheManager to make cache mechanism available for addons.
+
+     The single cache manager for OCC uses TenantAwareEhCacheManagerFactoryBean class, which is defined in the webservicescommons extension.
+     Code Sample
+
+     Ehcache Configuration:
+      EhCache is a open source,standards based configuration used to improve the performance,offload the database and simplify the scalability.
+      The detail cache configuration can be found in the following file: ycommercewebservices/web/webroot/WEB-INF/ehcache.xml.
+
+      <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="../config/ehcache.xsd" updateCheck="false" monitoring="autodetect"
+               dynamicConfig="true">
+
+          <!--
+          see ehcache-core-*.jar/ehcache-failsafe.xml for description of elements
+           -->
+
+          <diskStore path="java.io.tmpdir/occ_cache"/>
+          <defaultCache
+                  maxElementsInMemory="100000"
+                  eternal="false"
+                  timeToIdleSeconds="360"
+                  timeToLiveSeconds="360"
+                  overflowToDisk="true"
+                  diskPersistent="false"
+                  maxEntriesLocalDisk="10"
+                  diskExpiryThreadIntervalSeconds="360"
+                  memoryStoreEvictionPolicy="FIFO"
+                  />
+
+          <cache name="fieldSetCache"
+                 maxElementsInMemory="1000"
+                 eternal="true"
+                 overflowToDisk="true"
+                 diskPersistent="false"
+                 maxEntriesLocalDisk="2000"
+                 memoryStoreEvictionPolicy="LRU"/>
+
+          <cache name="productSearchCache"
+                 maxElementsInMemory="1000"
+                 eternal="false"
+                 overflowToDisk="true"
+                 timeToLiveSeconds="150"
+                 diskPersistent="false"
+                 maxEntriesLocalDisk="2000"
+                 memoryStoreEvictionPolicy="LRU"/>
+
+      ...
+      ...
+      ...
+      </ehcache>
+
+      Cached Methods:
+       The methods which have to be cached must be annotated with @Cachable annotation.
+
+       In simplest form ,the annotation requires only the name of the cache associated with this method.
+       Eg.@Cacheable (defaultCache)
+
+       In such case,key for the catche is generated using Key-Generator
+
+       For the ycommercewebservices extension it is the commerceCacheKeyGenerator.
+
+       If we want to generate a different key generator or create a key we can use the key attribute in @Cachable annotation.
+       Eg.@Cacheable (value = defaultCache, key = <"{#param1,#param2,#param3}>).
+
+       Cache Key Generator:
+        The default Key generator used for ycommercewebservices extension is the commerceCacheKeyGenerator.
+
+        It is defined in the commercewebservicescommons-spring.xml file.
+
+        ...
+             <bean id="commerceCacheKeyGenerator" class="de.hybris.platform.commercewebservicescommons.cache.CommerceCacheKeyGenerator" parent="wsCacheKeyGenerator">
+                <property name="baseSiteService" ref="baseSiteService"/>
+            </bean>
+        ...
+
+        This key generator creates a key based on the method parameters and some additional attributes like:
+        <base site,> <language>, <user>, <currency>. The base site identifier and language ISO codes are always added
+        to the generated key. The user identifier and currency ISO code are not added by default,
+         but can be easily added as presented by the following example:
+
+         @Cacheable(value = "productCache", key =
+         "T(de.hybris.platform.commercewebservicescommons.cache.CommerceCacheKeyGenerator).generateKey(true,true,#productCode,#fields)")
+         The first parameter of the generateKey method defines if a user identifier should be added to the cache key.
+          The second parameter defines if a currency isocode should be added to the cache key.
+
+  Calls Reference:
+   The sample Occ calls and customer buying scenarios gives us the possible use of Occ Api.
+  key features of the OCC API:
+   Stateless:
+    OCC does not use sessions. In order to access resources for a particular user you can use the following URL conventions:
+
+        User resources: https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/...
+        Cart resources: https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/carts/{cartID}...
+        Order resources: https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/orders/{orderID}...
+        where {userID} can have the following values:
+
+        ${uid} - ID of the registered user.
+        anonymous -Anonymous user.
+        current - User represented by the OAuth token.
+        where {cartID} can have the following values:
+
+        ${guid} - Globally Unique Identifier (GUID) of the anonymous cart. Works only for an anonymous user.
+        ${code} -Code of the non-anonymous cart. Works only for registered users.
+        current -Represents last modified cart of the specified user.
+
+    Localization Request Parameters:
+     Each of the calls can contain additional URL paramaters that change the localization of the returned objects.
+     lang: Changes the language of the localized values in the response. Provide the language ISO code as a value.
+      If no lang parameter is provided, then the response is localized with the default language of your base store.
+
+     curr: Changes the currency of your web service call. This means that all the calculations are performed in the requested currency
+      and all the price values are presented using the requested currency. Provide currency ISO code as a value.
+      If no <curr> parameter is provided, then the default currency of your base store is used.
+
+      we can use these parameters with every requested resource. The parameters handling is isolated in a specialized HTTP request filter.
+      Examples:
+      https://localhost:9002/rest/v2/mysite/users/{userId}/carts?curr=USD&lang=en: Use English language and US Dollar for the request.
+      https://localhost:9002/rest/v2/mysite/products/{productCode}?curr=USD: Use US Dollar and default language of mysite's store.
+      https://localhost:9002/rest/v2/mysite/stores/{storeId}?lang=de: Use German language and default currency of mysite's store.
+
+   Fields Parameter:
+      For most resource requests, there is a fields parameter, which can be used to configure a response.
+      It allows you to select fields for every object returned in a response. It can be composed of field names and levels
+       separated by a comma, for example: BASIC_FIELD_LEVEL, field1,field2. It can also have a nested configuration for selected fields,
+       such as: field1(field11,field12).
+   Cart Recalculation Options in the CartMatchingFilter:
+
+    V2 allows you to modify cart recalculation options in CartMatchingFilter
+
+    In the V2,customers's cart is persisted in the database and loaded by CartMatchingFilter for every incoming resource requests.
+
+    When loading the cart,the filter checks whether the cart is expired. If so, the cart is rebuilt but Cart Recalculation is not performed.
+
+    The new rebuilt cart contains all the entries that has been expired.If we want to specify the validity time of the cart counted from
+    last modification of the cart, the following properties is added in local.properties file.
+        commerceservices.cartValidityPeriod=<seconds>
+
+    If the cart has not expired,the recalculation is done only if the currency value is different from the value set by the currency filter.
+
+    we can customize the cart recalculation behavior by changing the values of the refreshCart request parameter and
+    the ycommercewebservices.cart.refreshed.by.default property.
+
+    The refreshCart parameter is optional and can be used only with cart resource requests.
+
+    If the request contains the refreshCart parameter with the true value, the CartMatchingFilter forces the cart recalculation.
+    See the following example of a “getting cart delivery modes” request with the refreshCart parameter forcing the cart recalculation:
+    https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/carts/{cartID}/deliverymodes?refreshCart=true
+
+    If the refreshCart parameter is not set, the behavior of the cart recalculation depends on the
+    ycommercewebservices.cart.refreshed.by.default property. By default, the value of the property is set to false:
+
+    ycommercewebservices.cart.refreshed.by.default=false
+
+    The default value of the property ensures that the cart is recalculated only if its currency is different from the one already
+    set by the currency filter.
+
+    If you want to recalculate the cart for every cart resource request, add the property with the true value to your local.properties file.
+
+    Changing the default value of the ycommercewebservices.cart.refreshed.by.default property to recalculate carts for every cart
+     resource request could slow your system down.
+
+     To disable the cart recalculation explicitly, use the refreshCart parameter with the value false.
+     See the following example of a “getting cart delivery modes” request with the cart recalculation disabled for every request:
+
+     https://localhost:9002/rest/v2/{baseSiteID}/users/{userID}/carts/{cartID}/deliverymodes?refreshCart=false
+
+    DTO in Request Body:-
+    The Version 2 features some new requests that accept DTOs in a request body. In such requests, parameters can be passed in JSON or XML format.
+     An example of this can be seen in the Body Parameters - Content-Type: application/json column.
+
+    Save Cart in OCC:
+      The save cart functionality allows you to save and restore saved carts at a later date.
+        Overview:
+          Save Cart functionality is given as a set of methods embedded with independent strategy that are wiredup relative to
+          business requirements and frontend requirements.
+          These strategies can be easily extended with pre/post-hooks.
+          The following save cart operations are currently supported:
+
+          Save a session cart as a saved cart
+          Save specific cart IDs, for a back-end operations, as saved carts
+          Display a list of saved carts
+          Display the details of a saved cart
+          Restore a saved cart to an active session cart
+          Delete saved carts
+          Clone saved carts
+          Edit the name and description of a saved cart
+
+ Changes to the Web Services:
+
+    In order to support the save cart functionality, the ycommercewebservices and commercewebservicecommons extensions have been extended.
+
+    The following sections describe the save cart-related changes that have been made to these extensions.
+
+    SaveCartController
+
+    In the ycommercewebservices extension, the SaveCartController class has been added.
+
+    This class delegates the incoming save cart calls to the implementation of the SaveCartFacade interface, which does the actual work.
+
+    Beans
+    In the commercewebservicecommons/resources/commercewebservicecommons-spring.xml file, you can configure the data transfer object that
+     serves as an intermediary object between the models in the ServiceLayer and the web service client. The following is an example:
+
+     					<bean>
+     					...
+     					<bean class="de.hybris.platform.commercewebservicescommons.dto.order.SaveCartResultWsDTO">
+     					<property name="savedCartData" type="de.hybris.platform.commercewebservicescommons.dto.order.CartWsDTO"/>
+     					</bean>
+
+     					</beans>
+     Save Cart Resource REST Calls:
+     The following is a list of all the calls related to the save cart functionality:
+
+     /users/{userId}/carts/{cartId}/save
+     /users/{userId}/carts/{cartId}/savedcart
+     /users/{userId}/carts
+     /users/{userId}/carts/{cartId}/flagfordeletion
+     /users/{userId}/carts/{cartId}/restoresavedcart
+     /users/{userId}/carts/{cartId}/clonesavedcart
+
+     we can also use the /users/{userId}/carts/{cartId}/save method to update an existing saved cart by providing the name and/or
+     description of the cart.
+
+     DTO Mapping and Response Configuration:
+       The Mapping Data Mechanism facilitates mapping of the data between the source and destination objects.
+        Overview:
+         The Mapping data mechanism provides us the ability to do provide a list of fields that we need to be mapped.
+
+         The Mapping data mechanism is used in webservices for mapping data between model objects and webservices DTO and between commerce layer
+         objects and webservices DTO.
+
+      Configuring the Mapping Mechanism:
+       The Core functionality is exposed by DataMapper Interface which provides a list of default methods for performing data mapping
+       between source and destination objects.
+
+       The DefaultDataMapper uses FieldSetBuilder and GeneralFieldFilter to map only specified fields of destination object.
+
+       To use this Mapping Data Mechanism in web services extension we have to define the DataMapper,
+       GeneralFieldFilter and FieldSetBuilder in the web context.
+
+       The main configuration can be found in /ycommercewebservices/web/webroot/WEB-INF/config/v2/dto-mappings-v2-spring.xml file.
+        The configuration related to FieldSetBuilder is described in the Fields Configuration section below.
+
+        ...
+            <!-- DataMapper -->
+            <alias alias="dataMapper" name="defaultDataMapper"/>
+            <bean id="defaultDataMapper" class="de.hybris.platform.webservicescommons.mapping.impl.DefaultDataMapper">
+                <property name="fieldSetBuilder" ref="fieldSetBuilder"/>
+            </bean>
+
+            <!-- Orika : Filters -->
+            <bean class="de.hybris.platform.webservicescommons.mapping.filters.GeneralFieldFilter">
+                <property name="fieldSelectionStrategy" ref="fieldSelectionStrategy"/>
+            </bean>
+        ...
+        Customizing the Mapping Mechanism:
+          The Mapping mechanism is based on Orika,a popular java bean framework. With this,we can either create custom classes or customizing
+          datamapper information.
+
+          During customization we need WsDTO annotation,because the default mapper only registers the annotated beans in the Orika Mapper factory.
+
+          so that we need to annotate your custom converters, mappers and filters with WsDTOMapping.
+
+          When we create custom mapper we can also extend AbstractCustomMapper which is a class being annotated and has additional feature of
+          field selection.
+
+
+
+
+
+
+
+
+     Reference:
+     https://help.sap.com/docs/SAP_COMMERCE/e5d7cec9064f453b84235dc582b886da/8b9e95cf866910148348c3bcab4be0b6.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
