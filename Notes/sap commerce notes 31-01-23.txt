@@ -1,0 +1,363 @@
+30/01/23
+
+Occ Continuation:
+
+  FieldMapper:
+   If we have to map a single  field to another with different name, we can use de.hybris.platform.webservicescommons.mapping.config.FieldMapper class
+   or the fieldMapper abstract bean.
+
+   The configuration in the dto-mappings-v2-spring.xml file as,
+    ...
+        <!-- Field Mappings : User -->
+        <bean parent="fieldMapper">
+            <property name="sourceClass"
+                      value="de.hybris.platform.commercewebservicescommons.dto.user.UserSignUpWsDTO"/>
+            <property name="destClass"
+                      value="de.hybris.platform.commercefacades.user.data.RegisterData"/>
+            <property name="fieldMapping">
+                <map>
+                    <entry key="uid" value="login"/>
+                </map>
+            </property>
+        </bean>
+        <bean parent="fieldMapper">
+            <property name="sourceClass"
+                      value="de.hybris.platform.commercefacades.user.data.CustomerData"/>
+            <property name="destClass"
+                      value="de.hybris.platform.commercewebservicescommons.dto.user.UserWsDTO"/>
+            <property name="fieldMapping">
+                <map>
+                    <entry key="defaultShippingAddress" value="defaultAddress"/>
+                </map>
+            </property>
+        </bean>
+    ...
+
+    Fields Configuration:
+
+     The Data mapper supports Field Configuration ie)we can provide a list of field that we want to have as response.
+
+     We can also create Field levels which are preconfigured sets like BASIC.DEFAULT and  FULL that we can use later while working
+     with mapper.
+
+     The Default data mapper uses the fieldset Builder to parse the fields configuration.
+
+     The default field set builder bean is defined in the /ycommercewebservices/web/webroot/WEB-INF/config/v2/dto-level-mappings-v2-spring.xml
+     ...
+         <alias alias="fieldSetBuilder" name="defaultFieldSetBuilder"/>
+         <bean id="defaultFieldSetBuilder"
+               class="de.hybris.platform.webservicescommons.mapping.impl.DefaultFieldSetBuilder">
+             <property name="defaultRecurrencyLevel" value="4"/>
+             <property name="defaultMaxFieldSetSize" value="50000"/>
+             <property name="fieldSetLevelHelper" ref="fieldSetLevelHelper"/>
+         </bean>
+         <alias alias="fieldSetLevelHelper" name="defaultFieldSetLevelHelper"/>
+         <bean id="defaultFieldSetLevelHelper"
+               class="de.hybris.platform.webservicescommons.mapping.impl.DefaultFieldSetLevelHelper">
+         </bean>
+     ...
+
+   Field Level Definition:
+    Field levels are predefined set of fields which can be defined in the spring configuration.
+
+    Default field set levels for DTO class can be found in /ycommercewebservices/web/webroot/WEB-INF/config/v2/dto-level-mappings-v2-spring.xml
+    file.
+
+    ...
+        <bean parent="fieldSetLevelMapping">
+            <property name="dtoClass"
+                      value="de.hybris.platform.commercewebservicescommons.dto.user.UserGroupWsDTO"/>
+            <property name="levelMapping">
+                <map>
+                    <entry key="BASIC" value="membersCount,subGroups,members,uid,name"/>
+                    <entry key="DEFAULT"
+                           value="membersCount,subGroups(DEFAULT),members(DEFAULT),uid,name"/>
+                    <entry key="FULL"
+                           value="membersCount,subGroups(FULL),members(FULL),uid,name"/>
+                </map>
+            </property>
+        </bean>
+
+        <bean parent="fieldSetLevelMapping">
+            <property name="dtoClass"
+                      value="de.hybris.platform.commercewebservicescommons.dto.user.PrincipalWsDTO"/>
+            <property name="levelMapping">
+                <map>
+                    <entry key="BASIC" value="uid,name"/>
+                    <entry key="DEFAULT" value="uid,name"/>
+                    <entry key="FULL" value="uid,name"/>
+                </map>
+            </property>
+        </bean>
+      ...
+
+Occ Error Response
+ Overview:
+  Occ Error handling mechanism is defined in webservicescommon extension.
+
+  It is used.
+   To give common error response formats
+   Mapping the response status for exceptions
+
+   The Restexception Resolver class replaces RestHandlerException Resolver
+
+   Its used to define generic error messages so that internal information is not leaked.An example of Internal information in class structure.
+
+   RestHandlerExceptionResolver:
+
+    It is deprecated since version 2105.
+
+    RestHandlerExceptionResolver is the deprecated implementation of HandlerException Resolver springInterface.
+
+    The RestHandlerExceptionResolver class is located in the webservicescommons extension.
+
+    Below is an example of the Spring configuration for the previous version of the ycommercewebservices extension.
+
+    <bean id="abstractRestHandlerExceptionResolverV2" abstract="true">
+        <property name="webserviceErrorFactory" ref="webserviceErrorFactory" />
+        <property name="messageConverters" ref="messageConvertersV2" />
+    </bean>
+
+    <bean id="restHandlerExceptionResolverV2" class="de.hybris.platform.webservicescommons.resolver.RestHandlerExceptionResolver"
+        parent="abstractRestHandlerExceptionResolverV2">
+        <property name="propertySpecificKey" value="ycommercewebservices"/>
+        <property name="configurationService" ref="configurationService"/>
+    </bean>
+
+    <util:list id="exceptionResolversV2">
+        <ref bean="restHandlerExceptionResolverV2" />
+    </util:list>
+
+   Configuration:
+
+    Configuration can be set in the properties in ycommercewebservices/project.properties file with the following format:
+
+    webservicescommons.resthandlerexceptionresolver.{extensionName}.{exceptionName}.logstack=true or false
+    webservicescommons.resthandlerexceptionresolver.{extensionName}.{exceptionName}.status=HTTP_STATUS_CODE
+
+    An example of the configuration is shown below:
+    webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.logstack=true
+    webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.status=400
+
+    The simple class name determines the statuscode. The Canonical class name does not determine the status code.
+    The Exception name must be unique.
+
+    RestExceptionResolver:
+
+    The RestExceptionResolver class is the implementation of the HandlerExceptionResolver Spring interface.
+
+    The RestExceptionResolver class is located in webservices commons extension.
+
+    It is used in ycommercewebservices extension to handle exceptions.
+
+    <bean id="restHandlerExceptionResolverV2" class="de.hybris.platform.webservicescommons.resolver.RestExceptionResolver"
+          parent="wsBaseRestExceptionResolver">
+        <property name="webserviceErrorFactory" ref="webserviceErrorFactory" />
+        <property name="messageConverters" ref="messageConvertersV2" />
+        <property name="extensionName" value="ycommercewebservices" />
+    </bean>
+
+    <util:list id="exceptionResolversV2">
+        <ref bean="restHandlerExceptionResolverV2" />
+    </util:list>
+
+    Configuration:
+
+     Configuration can done through properties in ycommercewebservices/project.properties file
+
+     The newly implemented solution allows us to define properties such as MessageFormatterType and Message.
+
+     This example demonstrates the CartAddressException being forwarded as is:
+
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.logstack=true
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.status=400
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.messageFormatterType=FORWARD
+
+     This example demonstrates the CartAddressException being covered with a GENERIC message:
+
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.logstack=true
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.status=400
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.message=Cart address exception generic message
+     webservicescommons.resthandlerexceptionresolver.ycommercewebservices.CartAddressException.messageFormatterType=GENERIC
+
+     WebserviceErrorFactory:
+
+      The WebserviceErrorFactory is used in error handling mechanism to convert exceptions to ErrorWsDTO objects
+
+       Its default implementation DefaultWebserviceErrorFactory uses list of AbstractErrorConverter in conversion process
+
+       we can influence the way the exceptions will be converted to ErrorWsDTO object by adding your converter to that list
+       in /ycommercewebservices/web/webroot/WEB-INF/config/common/error-config-spring.xml.
+
+       ...
+           <alias alias="webserviceErrorFactory" name="defaultWebserviceErrorFactory" />
+           <bean id="defaultWebserviceErrorFactory" class="de.hybris.platform.webservicescommons.errors.factory.impl.DefaultWebserviceErrorFactory">
+               <property name="converters">
+                   <list>
+                       <ref bean="validationErrorConverter" />
+                       <ref bean="cartVoucherValidationListErrorConverter" />
+                       <ref bean="cartModificationDataListErrorConverter" />
+                       <ref bean="webserviceExceptionConverter" />
+                       <ref bean="exceptionConverter" />
+                   </list>
+               </property>
+           </bean>
+       ...
+
+       All converters are checked to verify if they support validation objects or not. It is therefore possible to have
+        two different converters that support the same object but produce different errors.
+
+       Default Converters:
+
+       Error Converter                   Supported Types                                       Supports Descendants           Active by Default
+
+  ValidationErrorConverter               org.springframework.validation.Errors                                        yes       yes
+CartModificationDataListErrorConverter   de.hybris.platform.commercefacades.order.data.CartModificationDataList       yes       yes
+CartModificationDataErrorConverter       de.hybris.platform.commercefacades.order.data.CartModificationData          yes         no
+WebserviceExceptionConverter             de.hybris.platform.webservicescommons.errors.converters.WebserviceException yes        yes
+ExceptionConverter                       java.lang.Exception excluding descendants of
+                         de.hybris.platform.webservicescommons.errors.converters.WebserviceException                  yes       yes
+
+ HTTP Message Converters:
+  Occ API allows converting DTO Objects to and from their text representation(XML/JSON) used in Rest calls.
+
+  For each Rest call,the output data is returned as Standard DTO objects.
+
+  DTO objects are regular java classes  that are automoatically generated by platform mechanism in thecommercewebservicescommmons-beans.xml file.
+
+  These objects can also be used as parameters.
+
+  To be used in the Rest calls ,the DTO objects are converted to/from text(XML/JSON) format using a convertion mechanism available in
+  webservicescommons extension.
+
+  The ycommercewebservices extension is configured to use the HTTP message converters defined in webservicescommons extension.
+
+  ...
+  <alias name="jaxbMessageConverters" alias="messageConvertersV2" />
+  ...
+
+  ...
+      <bean id="abstractRestHandlerExceptionResolverV2" abstract="true">
+          <property name="webserviceErrorFactory" ref="webserviceErrorFactory" />
+          <property name="messageConverters" ref="messageConvertersV2" />
+      </bean>
+  ...
+
+  ...
+       <bean id="oAuth2ExceptionRendererV2" parent="oAuth2ExceptionRenderer">
+          <property name="messageConverters" ref="messageConvertersV2"/>
+      </bean>
+  ..
+
+  Selecting the Response Format:
+
+   By default,only the AcceptHeader is enabled and used in the content negotiation in incoming Occ Api requests.
+
+   Content Negotiation using the Format Query paramater and Path extension is disabled in Occ API.
+
+   According to the Spring Framework documentation, using path extensions is discouraged and deprecated from the 5.3 version.
+
+   As an alternative,it is possible in Occ to enable  fallback mode to use format query parameter to express acceptable request formats.
+
+   To enable fallback mode add the following property to your configuration:
+   ycommercewebservices.content.negotiation.legacy=true
+
+   WsDTO Concept:
+
+    WsDTO is a data layer used by the REST API in OCC.
+
+    WsDTO model adds stability to Rest Api by removing the dependency to the commerce services data model.
+
+    Any changes made in the data model will not directly affect the Rest Api.
+
+    It also improves flexibility by having a control over returning fields.
+
+    We have influence on how the WsDTO object look like when returning.
+
+    We can explicitly request specific fields to be filled in an object or use a predefined set of fields.
+
+    Stable API:
+     In v1 of the REST API, services return data objects which could lead to some unexpected behaviors when fields are added or changed
+     in the commerce services data model.
+
+     Every data model change in the commerce services could influence the REST API and as a result, could affect compatibility with the
+      service consumers.
+
+     The WsDTO layer is resilient to changes in the commerce services data model to ensure API stability.
+
+     Dynamic Field Configuration:
+
+      The new WsDTO layer was introduced which provides a new mechanism to define fields to return by API
+
+      BASIC - only a basic set of fields that identify an object are filled. For example, name, code, and ID.
+      DEFAULT - medium set of fields defined on the most common use cases.
+      FULL - all fields are returned.
+
+      All sets can be changed or new ones can be added on the server side by using specific configuration.
+
+      Consumers have influence on returning fields explicitly by sending them as a parameter or implicitly by sending a set name
+      for the fields.
+
+      WsDTO Structure:
+       WsDTO objects have been created initially as closely as possible to commerce services data objects so mapping is simple
+        and automatically done by Orika mapper.
+
+      They are created in the commercewebservicescommons-beans.xml file as regular bean objects.
+
+      ...
+      	<bean class="de.hybris.platform.commercewebservicescommons.dto.order.CartWsDTO"
+                extends="de.hybris.platform.commercewebservicescommons.dto.order.AbstractOrderWsDTO">
+              <property name="totalUnitCount" type="Integer"/>
+              <property name="potentialOrderPromotions"
+                        type="java.util.List&lt;de.hybris.platform.commercewebservicescommons.dto.product.PromotionResultWsDTO>"/>
+              <property name="potentialProductPromotions"
+                        type="java.util.List&lt;de.hybris.platform.commercewebservicescommons.dto.product.PromotionResultWsDTO>"/>
+          </bean>
+      	...
+
+      	When adding a new WsDTO object, it is recommended to also add a level mapping configuration in
+      	the /WEB-INF/config/v2/dto-level-mappings-v2-spring.xml file.
+
+      	Differences to Commerce Services Data Objects:
+
+      	 Despite the fact that most of the objects were defined as closely as possible to data objects there are some exceptions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
