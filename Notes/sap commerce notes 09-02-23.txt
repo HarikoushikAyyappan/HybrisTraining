@@ -1,0 +1,227 @@
+09/02/23
+Impex:
+ Impex stands for IMPort and EXport .
+
+ We can do impex operations in Hac.
+
+ Import operation is done to import data into the table.Either we can import new data or update data.
+
+ The Features available in ImpEx are Header,ValueLines,macros and comments.
+
+ Eg.Insert_update Employee; uid[unique=true,allownull=$val];name;description[allownull=true];password;sessionLanguage(isocode);groups(uid)[mode=apend]
+
+    ;00092; Test;My First Impex Import Learning Test;hybris1;en;admingroup,employeegroup
+
+    Here First line is the Header and Second line is Value line. The lines in bracket are accessmodifiers.
+
+    sessionLanguage and groups are objects.en is the value of language table and isocode is its coloumn name.
+
+    we have given mode=append inside bracket in groups coloumn definition.It means we can add more values in that particular coloumn.
+
+    Attributes in the definition are uid,name,password,sessionLanguage,groups. The Attributes are semicolon separated if comma is there the
+    particular coloumn has more values.
+
+    macros -say if we have to use the modifier allownull=true for many times we can set that as $myVal=true and use as allowNull=$myVal
+
+
+
+ The Modes available in ImpEx are Insert,Update ,Remove and Insert_update.
+
+  Insert-It is used to create a new entry if suppose an entry is already present,it gives error.
+  Update-It is used to update an entry.If suppose the entry is not there it gives error.
+  Remove-It is used to remove an entry.
+  Insert_update-It is used to insert an entry if suppose the entry is present it updates and if the entry is not present it creates an new entry.
+
+ Type:
+ Eg.select * from {Employee} where {uid}='0052'
+   Employee is the Type.
+
+ We will be writing these queries inside ImportContent tab.Right to that we have ImportScript tab using which we can import csv file of bulk
+ data into the table.
+
+
+ Generally there are two types of tables available
+
+   CatalogAware -Table which has Catalogversions namely Staged and Online. Using Catalogs,we can able to do runtime changes in storefront
+    Changes are made in Staged version,Then someone reviews it and finally if sychronization is done and the version is changed to Online version.
+    It is also possible to make changes in online version also but making changes in staged version reduces errors.Eg.Product
+
+   CatalogUnAware-These Tables does not have catalogversions.Eg.Employee.
+
+   ImpEx for CatalogAware version:
+
+
+$productCatalog=apparelProductCatalog
+$productCatalogName= Apparel Product catalog
+$catalogVersion=catalogversion(catalog(id[default=$productCatalog]),version[default='Staged'])[unique=true,default=$productCatalog:Staged]
+
+$baseProduct=baseProduct(code,catalogVersion(catalog(id[default='$productCatalog']),version[default='Staged']))
+
+$approved=approvalstatus(code)[default='approved']
+
+
+
+
+INSERT_UPDATE ApparelProduct;code[unique=true];$catalogVersion;unit(code);supercategories(code,$catalogVersion);varianttype(code);$approved;ean;genders(code)
+;32009;;pieces;Clothes,Pow;;;31313;MALE
+
+
+ Using map in impex file:
+
+INSERT_UPDATE
+
+TestData;sampleName[unique=true];address(key(code),value(code))[map-delimeter=\];
+;Danieal;Address Line 1 -> 1230 Larimeter St | Address Line 2 -> Denver | Address Line 3 -> DADA | Address Line 4 ->Unites States;
+
+
+
+
+inser_update Product; pk[unique=true];code
+"#% impex.exportItemsFlexibleSearch("" select {p.pk},{p.code} from {Product as p}"");"
+
+Export:
+
+If we want to export data,we must get into backoffice and searching for "script",comes script Generator.
+
+Click Migration option in dropdown menu and the script will be produced to export all the tables in tha database.
+
+We need to just copy the required table and we should paste in the Export content tab in ImpEx Export menu.
+
+AFter Some time ,a zip file is downloaded with the table that we exported.Once unzipped,there contains an  Excel file and importscript.impex
+file.
+
+If we want to import the data in another database we have to go ImpEx Import and clicking Importscript and we should select importscript.impex
+file by searching the desktop.
+
+
+BatchMode Operation:
+ If we want to update or remove bulk data from/into the table,we use BatchMode Operation.
+
+ Requirement :
+
+ a. I need to update the name Field of all Order with the value 'hybrisTest' in one go.
+
+
+
+ INSERT_UPDATE Order;code[Unique=true];name
+ ;00000001;hybrisTubeNameTest
+ ;acceptanceTestOrder4;hybrisTubeNameTest
+
+ ;acceptanceTestOrder1;hybrisTest
+ ;acceptanceTestOrder2;hybrisTest
+ ;acceptanceTestOrder3;hybrisTest
+ ;acceptanceTestOrder4;hybrisTest
+ ;acceptanceTestOrder5;hybrisTest
+ ;acceptanceTestOrder6;hybrisTest
+ ;acceptanceTestOrder7;hybrisTest
+ ;acceptanceTestOrder8;hybrisTest
+ ;acceptanceTestOrder9;hybrisTest
+ ;acceptanceTestOrder0;hybrisTest
+ ;acceptanceTestOrder10;hybrisTest
+ ;acceptanceTestOrder11;hybrisTest
+ ;acceptanceTestOrder12;hybrisTest
+ ;zohan-00-1;hybrisTest
+ ;zohan-00-2;hybrisTest
+ ;00000001;hybrisTest
+ ;00000003;hybrisTest
+ ;00000005;hybrisTest
+ ;00000007;hybrisTest
+ ;00000009;hybrisTest
+ ;00000011;hybrisTest
+ ;00001001;hybrisTest
+ ;00001003;hybrisTest
+ ;00002002;hybrisTest
+ ;00004004;hybrisTest
+ ;00004005;hybrisTest
+ ;00014000;hybrisTest
+ ;00014002;hybrisTest
+ ;00014004;hybrisTest
+
+
+ Batch Mode Operation :
+
+ ------------------------
+ Impex to Update all Records of Order Table with name field value as : hybrisTest
+
+ UPDATE Order[batchmode=true];itemtype(code)[unique=true];name
+ ;Order;hybrisTest
+
+ -------------------------
+ Impex to Update the name field value as 'hybrisSelectiveUpdate' Only for those records in Order Table which have description value as 'aman'
+
+ UPDATE Order[batchmode=true];description[unique=true];name
+ ;aman;hybrisSelectiveUpdate
+
+
+ -----------------------------
+
+ b. I need to remove the all data present in type hybriProductStoreDetails in one go.
+
+
+ Conventional Way:
+
+ REMOVE hybrisProductStoreDetails;pk[Unique=true]
+ ;8796093065189
+ ;8796093097957
+
+ Using batchMode Operation
+
+ REMOVE hybrisProductStoreDetails[ batchmode=true];itemtype (code)[unique=true]
+ ;hybrisProductStoreDetails
+
+ Batch Mode Operation for consitional based removing :
+
+ REMOVE Order[ batchmode=true];description[unique=true]
+ ;aman
+
+
+
+ I want to update the name value as "hybrisBatchSelectiveUpdate" for the Order which have description value as "aman"
+
+ 00000005
+
+
+
+ Document Id in Impex:
+
+ Between User and Address, there is one to Many relations with address relation is defined as part of and qualifier of Address is ‘addresses’.
+
+ In User itemtype, we have 2 attributes : defaultPaymentAddress and defaultShipmentAddress. These attributes are of type Address with
+ isSelectionOf as ‘Addresses’.
+
+ Note:  Attribute : isSelectionOf
+ References an attribute of the same type. Only values of the referenced attribute can be selected as values for this
+  attribute. Typical example: the default delivery address of a customer must be one of the addresses set for the
+  customer. Default is 'false'.
+
+ Please Note that partof items do not always provide a unique key but hold their enclosing parent as foreign key.
+
+ For Example : User (Customer) can have different address : defaultPaymentAddress and defaultShipmentAddress.
+
+ Customer owns address exclusively.the address hold the customer pk as back reference.
+
+
+ When using Impex , both customer and address have to be imported in separate lines.
+
+
+ You must therefore reference the address using a unique key, which addresses do not provide.
+
+ For  cases where a reference within the impex script is required , Impex provides a special header attribute marked with the prefix & to specify a virtual id called as document id . Each imported line can optionally define such a document id which allows other lines to reference it later using the same attribute qualifier (with & prefix).
+
+
+
+ 	INSERT_UPDATE Address;&add;owner(Customer.uid)[Unique=true];streetname;postalcode
+ 	;hybris ;testuser2@test.com;street12;11865
+
+        ;hybris1;testuser2@test.com;street19;11861
+
+
+
+ 	Update Customer;uid[Unique=true];defaultShipmentAddress(&add)
+ 	;testuser2@test.com;hybris1
+
+
+
+
+
+
