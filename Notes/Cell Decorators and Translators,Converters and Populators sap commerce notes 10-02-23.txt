@@ -1,0 +1,382 @@
+10/02/23
+
+Call Decorators and Translators in ImpEx:
+
+While working on with impex. we may be required to modify value lines based on some business logic rather than directly inserting
+ there comes the use of cell decorators and translators.
+
+Hybris has provided different ways to handle the same.
+
+1) Using Cell Decorator
+2) Using Translator
+3) Using Special Translator
+
+Cell Decorators:
+  Cell Decorator is used to obtain the specific cell of value line after parsing but before translating it
+
+  We can then decorate the cell value based on business  logic.
+
+  Decorating cell value means modifying the cell value  based on some business requirement.
+
+  Example:
+   Requirement:
+    Assume we are Updating Customer record through  impex
+
+    We need to check customer belongs to which country  using customer id provided in impex.
+
+    If customer belongs to US then append _US to customer id before saving
+
+    If customer belongs to UK then append _GB to  customer id before saving
+
+    Let’s implement this requirement with the help of Cell   Decorator
+
+     We need to configure cell decorator by adding the  modifier cellDecorator to a header attribute specifying
+     our decorator class.
+
+     #Updating only customer
+
+     INSERT_UPDATE
+     Customer;uid[unique=true][cellDecorator=de.hybris.training.core.decorators.MyCustomDecorator];name;groups(uid);
+     ;abcd@yahoo.com;Hybris
+     user;customergroup
+
+     We have to implement the logic in a class.
+
+     package de.hybris.training.core.decorators;
+
+     import de.hybris.platform.core.Registry;
+     import de.hybris.platform.core.model.user.UserModel;
+     import de.hybris.platform.servicelayer.user.UserService;
+     import de.hybris.platform.util.CSVCellDecorator;
+     import java.util.Map;
+     import org.apache.log4j.Logger;
+     public class MyCustomDecorator implements CSVCellDecorator
+     {
+
+     private static final Logger LOG =
+     Logger.getLogger(MyCustomDecorator.class);
+     private final String USER_SERVICE_BEAN =
+     "userService";
+
+     protected UserService getUserService()
+     {
+     return (UserService)
+
+     Registry.getApplicationContext().getBean(USER_SERVI
+     CE_BEAN);
+     }
+
+     @Override
+     public String decorate(final int position, final
+     Map<Integer, String> srcLine)
+     {
+
+     LOG.info("In Decorate Method");
+     LOG.info("Position is : " + position);
+     final String csvCell =
+
+     srcLine.get(Integer.valueOf(position));
+
+     LOG.info("Value of csvcell is :" + csvCell);
+
+     if (csvCell == null || csvCell.length() == 0)
+     {
+     return csvCell;
+     }
+     else
+     {
+
+     LOG.info("In else method");
+     final UserModel userModel =
+     getUserService().getUserForUID(csvCell);
+
+     LOG.info("User for csvcell " + csvCell + " is
+
+     :" + userModel.getUid());
+
+     if
+
+     (userModel.getDefaultShipmentAddress().getCountry()
+     .getIsocode().equals("US"))
+
+     {
+
+     LOG.info("Country is US");
+     return csvCell + "_US";
+     }
+     else if
+
+     (userModel.getDefaultShipmentAddress().getCountry()
+     .getIsocode().equals("GB"))
+     {
+     LOG.info("Country is GB");
+     return csvCell + "_GB";
+
+     }
+     else
+     {
+
+     LOG.info("in else method");
+     return csvCell;
+     }
+     }
+     }
+
+     }
+
+     Impex Translator:
+
+     Translator can be used to change the translation logic for a value
+
+     The above configured translator class has to extend the AbstractValueTranslator.
+
+     It defines 2 methods
+
+     a. public abstract Object importValue( final String valueExpr, final Item toItem )
+
+
+     The valueExpr is the parsed cell value (possible decorators already applied if any), toItem is the
+      resolved item
+
+     b. public abstract String exportValue( final Object value)
+
+     Implement the translation logic for the export case  here, The given object has to be translated to a String
+    that has to be returned.
+    Let's understand with below Requirement
+
+    Translator for price attribute to prevent importing negative prices
+
+    #Price row update
+
+    INSERT_UPDATE
+    PriceRow;productId[unique=true];unit(code[unique=tr
+    ue,default=pieces]);currency(isocode)[unique=true];price[translator=de.hybris.training.core.translators.MyCustomTranslator];
+    minqtd;unitFactor;net
+    ;300441142;pieces;GBP;8.46;1;1;false
+
+    package de.hybris.training.core.translators;
+    import de.hybris.platform.impex.jalo.translators.AbstractValueTranslator;
+    import de.hybris.platform.jalo.Item;
+    import de.hybris.platform.jalo.JaloInvalidParameterException;
+    import org.apache.commons.lang.StringUtils;
+
+    public class MyCustomTranslator extends AbstractValueTranslator
+    {
+
+    @Override
+    public Object importValue(final String valueExpr,
+    final Item toItem) throws
+    JaloInvalidParameterException
+    {
+    clearStatus();
+    Double result = null;
+    if (!StringUtils.isBlank(valueExpr))
+    {
+    try
+    {
+    result = Double.valueOf(valueExpr);
+    result=result+1;
+    }
+    catch (final NumberFormatException exc)
+    {
+    setError();
+    }
+    if (result != null && result.doubleValue() <
+
+    0.0)
+
+    {
+    setError();
+    }
+    }
+    return result;
+    }
+
+    @Override
+    public String exportValue(final Object value)
+    throws JaloInvalidParameterException
+    {
+    return value == null ? "" : value.toString();
+    }
+    }
+
+    Escaping special characters in Impex:
+
+     When we insert data through impex, its sometime  necessary to insert special characters as part of data.
+
+     When we provide these values in impex, impex can’t run it successfully.
+
+     It’s mainly because impex has its own definition for semicolon and colon characters.
+
+     Semicolon in impex is field separator and colon is used for composite key.
+
+
+     How do we escape special meaning of these charactersand insert those characters as part of data?
+
+     We can achieve this by using special delimiter called“path-delimiter”
+
+     We can use any character for path-delimiter to escape special characters
+
+     $contentCatalog=electronics-ukContentCatalog
+     $syncJob=sync $contentCatalog:Staged->Online
+     INSERT_UPDATE
+     SyncAttributeDescriptorConfig;syncJob(code)[default=s
+
+      ynjobName][unique=true][path-
+     delimiter=!];attributeDescriptor(enclosingType(code),q
+
+     ualifier)[unique=true];includedInSync;copyByValue[def
+     ault=false];presetValue;translateValue[default=false];u
+     ntranslatable[default=false]
+     ;$syncJob;AbstractPage:originalPage;true
+
+
+
+     Convertors and Populators:
+
+     In hybris, Converter creates instances of Beans and Populators instantiate those instances using source object. Each Converter can contains list of populators. Converter's task is only instantiating the Beans objects.
+
+     converters are used to create data objects (DTOs) out of (mostly) model objects and populators are used to fill in the dtos.
+
+     Data objects are constructed from Models or other Service Layer objects using Converters and Populators. Converters create new instances of Data objects and call Populators to populate these data objects.
+
+
+
+     The commercefacades extension provides a suite of facades that make up a unified multichannel storefront API which can be used by multiple front-ends. The facade's responsibility is to integrate existing business services from the full range of the hybris extensions and expose a Data object (POJO) response adjusted to meet the storefront requirements
+
+     No concrete Converters should be written, all converters should be Spring configured only and should use the AbstractConverter base class.
+
+     No Populator should be called directly in code, Converters should be Spring injected and used.
+     All conversion logic should exist in Populators and these should be well-encapsulated and independent.
+
+Converters
+Converters create new instances of Data objects and call Populators to populate these.
+
+The Data object is always created from a prototype-scoped spring bean that is defined in the beans.xml file for the extension.
+
+
+Populators
+
+Populators break the conversion process of filling out a Data Object down into a pipeline of population tasks or steps. Each Populator carries out one or more related updates to the Data Object prototype. Each population step can invoke services or copy data from the source business object to the prototype Facade Data object. Facades always use a Converter to create a new instance of a Data Object prototype and then invoke Populators or other Converters to fulfill the task of building up the Data Object.
+
+Why do we need them?
+In most applications we need to create a subset of data from a larger data structure.
+
+For e.g:- we might have a customer table in the database that has 100 fields but we might only need only 10 of them (with some
+ logic applied to them) to display on the UI.
+
+ Your model object (source) is that larger data structure (that has all the data from the database) and let’s call the
+ subset of data that your screen needs the target data structure  the DTO (Data Transfer Object).
+
+ We call it the target because we are trying to convert from the source (Model) to the target(DTO).
+
+So using converters and populations we are trying to create a target DTO by converting a source Model object using
+ Populators to populate the DTO.
+
+ Implementation
+
+ The typical flow of program execution within SAP Commerce is this.
+
+ Controller —> Facades —> Services —> DAO
+
+ Converters and Populators exist in the Facade layer.
+
+Converters provide a uniform interface for the facade to invoke all the Populators configured for that Converter
+
+
+We will follow along using an example from CMS facades.
+The particular example we will pick is responsible for serving responsive images using the ResponsiveMediaFacade.
+
+ This facade is called by a controller SimpleResponsiveBannerComponentController.
+
+The facades instantiate a model object either by calling the Services layer (for most cases) or by instantiating the model directly.
+
+After which, the facade then calls the Converter which returns the DTO that the controller requires for the UI.
+
+Before starting on implementing this you need to have an idea of what data your Storefront requires and from which model object(s) you
+ will need to get that data and also identify if there are any existing Converters that you can extend and modify/add existing Populators.
+
+ The following are the steps on how to define converters and Populators.
+ 1. Define a Converter in *facades-spring.xml.
+ When defining a Converter we need to specify what our target object is. In other words, the DTO that we want our Converter to build.
+ In our example:-
+ <bean id="responsiveMediaContainerConverter" parent="abstractPopulatingConverter">
+     <property name="targetClass" value="java.util.ArrayList"/>
+     <property name="populators">
+       <list merge="true">
+         <ref bean="responsiveMediaContainerPopulator" />
+       </list>
+     </property>
+ </bean>
+
+ The Populators property has several ways that allows for injecting either
+ a. Single Populator
+ b. List of Populators
+ c. Merge Populators to an already defined Converters
+ d. Add and remove Populators to a Converter.
+ SAP Commerce calls these configurable/modifiable Populators.
+
+ 2. Define and Develop all the Populators.
+ a. Definition
+ <bean id="responsiveMediaContainerPopulator" class="de.hybris.platform.acceleratorfacades.device.populators.ResponsiveMediaContainerPopulator">
+     <property name="imageConverter" ref="responsiveImageConverter"/>
+ </bean>
+ Note that in this particular the responsiveMediaContainerPopulator needs another Converter to do its job.
+ b. Development
+ All Populators implement the Populator<SOURCE,TARGET> interface and implement the populate method.
+ The populate method can be as simple as getting and setting values from the Model object (Source) to the target (DTO) or calling Services to get additional data or calling other convertors to get another DTO.
+ 	public void populate(final MediaContainerModel source, final List<ImageData> target) throws ConversionException
+ 	{
+ 		populateImages(source, target, ImageDataType.GALLERY); //GALLERY by default
+ 	}
+
+ 3. Create a Facade that has a reference to the Convertor.
+ <alias name="defaultResponsiveMediaFacade" alias="responsiveMediaFacade"/>
+ <bean id="defaultResponsiveMediaFacade" class="de.hybris.platform.acceleratorfacades.device.impl.DefaultResponsiveMediaFacade">
+    <property name="mediaContainerConverter" ref="responsiveMediaContainerConverter"/>
+ </bean>
+
+ 4. Call the convertors convert or convertAll method inside the Facade.
+ Here we call the converters covert method or the convertAll which invokes all the populators defined for that convertor in sequence.
+
+ public List<ImageData> getImagesFromMediaContainer(final MediaContainerModel mediaContainerModel)
+ {
+      return getMediaContainerConverter().convert(mediaContainerModel);
+ }
+ In our example this is being done in the getImagesFromMediaContainer.
+
+ Hopefully this gave you better idea not only how to implement this pattern but also on the reasons behind why SAP Commerce uses this pattern.
+
+Define Converters and Populators?
+
+The Conversion between models and data objects is done by the converters and populators.
+A converter may create object and contains a list of populators.
+ A populator files in some fields (or calculates using services) of the data object to be used in the front-end.
+Populators must be independent and must have a clear goal, so they can be easily reused.
+Both are injected using Spring. The new constructor must be avoid.
+
+Converter.java
+public interface Converter<S, T>
+{
+T convert(S source) throws ConversionException;
+}
+       Populator.java
+public interface Populator<S, T>
+{
+void populate(S source, T target) throws ConversionException, IllegalArgumentException;
+void populateFinals(S source, T target) throws ConversionException, IllegalArgumentException;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
