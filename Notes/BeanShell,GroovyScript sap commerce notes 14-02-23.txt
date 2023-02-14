@@ -1,0 +1,733 @@
+14/02/23
+
+BeanShell:
+
+a. BeanShell is a Java-like dynamically typed language that allows to execute scripts in a running Java environment.
+
+b. We can use it to enhance the functionality of our application or to test and debug snippets of code without the lengthy compile and
+re-deploy cycles.
+
+c. Hybris platform incorporates BeanShell since its release 4
+
+d. What we do in beanshell ?
+ create some Hybris object, persist it and feed it to the service method
+
+e.  API Overview
+From the user perspective, the API is very simple. It is based on four main interfaces:
+
+ScriptingLanguagesService provides methods for obtaining a ScriptExecutable object.
+ScriptExecutable represents an executable object, which provides methods for executing it.
+ScriptContent represents an object that wraps script content in a specific language type.
+ScriptExecutionResult represents the script execution result.
+
+=======================
+
+In this example, we are just setting the description of a class by calling method in the serviceLayer and We are searching & displaying the
+content that we need.
+
+import de.hybris.platform.product.impl.DefaultProductService;
+import de.hybris.platform.core.model.order.OrderModel;
+import de.hybris.platform.servicelayer.search.FlexibleSearchQuery;
+import de.hybris.platform.servicelayer.search.SearchResult;
+
+modelService = spring.getBean("modelService");
+flexibleSearchService = spring.getBean("flexibleSearchService");
+defaultAbstractOrderService = spring.getBean("defaultAbstractOrderService");
+
+
+
+ String[] orderList={"00002001"};
+
+ for(String orderNum:orderList)
+        {
+
+String fetchquery="select {o.pk} from {Order as o} where {o.code}='"+orderNum+"'";
+
+
+FlexibleSearchQuery query = new FlexibleSearchQuery(fetchquery);
+SearchResult results = flexibleSearchService.search(query);
+
+for (OrderModel orderModel : results.getResult()) {
+
+  orderModel.setDescription("Cent");
+  modelService.save(orderModel);
+
+
+  print(orderModel.getCode()+" is : "+orderModel.getStatus().getCode());
+}
+
+}
+
+
+
+========================
+
+In this,there is a class called DefaultOrderCheckService and there is a method called check in it.By searching its alias name or beanId from its
+xml file,we call the method from service layer and we just display the content that we need.
+
+We can also make it display in server logs using Logger so that even if HybrisAdministration Console times out we can check the content
+diplayed during bulk data operations.Making the content displayed in server helps to debug the code easily in case of error as it points
+out the line which has error.
+
+
+import de.hybris.platform.product.impl.DefaultProductService;
+import de.hybris.platform.core.model.order.OrderModel;
+import de.hybris.platform.servicelayer.search.FlexibleSearchQuery;
+import de.hybris.platform.servicelayer.search.SearchResult;
+
+modelService = spring.getBean("modelService");
+flexibleSearchService = spring.getBean("flexibleSearchService");
+defaultCheckOrderService = spring.getBean("defaultCheckOrderService");
+
+
+
+ String[] orderList={"00002001"};
+
+ for(String orderNum:orderList)
+        {
+
+String fetchquery="select {o.pk} from {Order as o} where {o.code}='"+orderNum+"'";
+
+
+FlexibleSearchQuery query = new FlexibleSearchQuery(fetchquery);
+SearchResult results = flexibleSearchService.search(query);
+
+for (OrderModel orderModel : results.getResult()) {
+
+  orderModel.setDescription("Cent");
+  modelService.save(orderModel);
+
+  print(defaultCheckOrderService.check(orderModel));
+
+  print(orderModel.getCode()+" is : "+orderModel.getStatus().getCode());
+}
+
+}
+
+======================
+
+import de.hybris.platform.product.impl.DefaultProductService;
+import de.hybris.platform.core.model.order.OrderModel;
+import de.hybris.platform.servicelayer.search.FlexibleSearchQuery;
+import de.hybris.platform.servicelayer.search.SearchResult;
+import org.apache.log4j.Logger;
+
+modelService = spring.getBean("modelService");
+flexibleSearchService = spring.getBean("flexibleSearchService");
+
+Logger LOG=Logger.getLogger("myBeanshell");
+
+void callMethod(OrderModel order){
+
+  LOG.info("hellloooooo");
+
+  print("lo ji");
+
+}
+
+ String[] orderList={"00002001"};
+
+ for(String orderNum:orderList)
+        {
+
+String fetchquery="select {o.pk} from {Order as o} where {o.code}='"+orderNum+"'";
+
+
+FlexibleSearchQuery query = new FlexibleSearchQuery(fetchquery);
+SearchResult results = flexibleSearchService.search(query);
+
+
+for (OrderModel orderModel : results.getResult()) {
+
+   callMethod(orderModel);
+  orderModel.setDescription("Cent");
+  modelService.save(orderModel);
+
+  print(orderModel.getCode()+" is : "+orderModel.getStatus().getCode());
+}
+
+}
+
+print("Hi");
+
+
+
+======================
+
+This is an example of Executing Scripts from the File Syste
+
+Assuming that our sample script is located on the disk, with the path /Users/zeus/scripts/setMimesForMedias.groovy,you can execute
+ it as follows:
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
+
+final Resource resource
+ = new FileSystemResource("/Users/zeus/scripts/setMimesForMedias.groovy");
+
+// Let's assume we have scriptingLanguagesService injected by the Spring
+final ScriptContent scriptContent
+        = new ResourceScriptContent(resource);
+final ScriptExecutable executable
+        = scriptingLanguagesService.getExecutableByContent(scriptContent);
+
+// now we can execute script
+final ScriptExecutionResult result = executable.execute();
+
+// to obtain result of execution
+System.out.println(result.getScriptResult());
+
+
+
+
+====================
+
+
+Executing Scripts by Using Classpath Or, if you have the same script but in the classpath in the folder scripts:
+
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
+
+final Resource resource
+       = new ClassPathResource("scripts/setMimesForMedias.groovy");
+
+// Let's assume we have scriptingLanguagesService injected by the Spring
+final ScriptContent scriptContent
+       = new ResourceScriptContent(resource);
+final ScriptExecutable executable
+       = scriptingLanguagesService.getExecutableByContent(scriptContent);
+
+// now we can execute script
+final ScriptExecutionResult result = executable.execute();
+
+// to obtain result of execution
+System.out.println(result.getScriptResult());
+
+
+
+=======================
+
+
+Executing Scripts Stored Remotely:
+
+We can also store the script content remotely, for instance as a gist at github.
+
+comInformation published on non-SAP site under the URLhttps://gist.githubusercontent.com/zeus/testMimesForMedias.groovy.
+
+ In this way, it is easy to get hold of and execute:
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
+final Resource resource
+         = new UrlResource(
+   "https://gist.githubusercontent.com/zeus/setMimesForMedias.groovy");
+
+// Let's assume we have scriptingLanguagesService injected by the Spring
+final ScriptContent scriptContent
+         = new ResourceScriptContent(resource);
+final ScriptExecutable executable
+         = scriptingLanguagesService.getExecutableByContent(scriptContent);
+
+// now we can execute script
+final ScriptExecutionResult result
+         = executable.execute();
+
+// to obtain result of execution
+System.out.println(result.getScriptResult());
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+GroovyScript:
+
+We need to create grrovy scripts frequently for our daily Project tasks :
+
+Groovy is a scripting language based on Java.
+
+It is used in Hybris  mainly for debugging and troubleshooting purpose
+
+Using Groovy , we can run the scripts inside Hybris without modifying the source code.
+
+It is very powerful for debugging purpose especially remote system
+
+GroovyScript and Beanshell are similar except the fact that GroovyScript does not care for syntax.
+
+The Examples fo some GroovySCripts are given below.
+
+
+
+---------------------------
+
+
+import de.hybris.platform.product.impl.DefaultProductService;
+import de.hybris.platform.core.model.order.OrderModel;
+import de.hybris.platform.servicelayer.search.FlexibleSearchQuery;
+import de.hybris.platform.servicelayer.search.SearchResult;
+
+modelService = spring.getBean("modelService");
+flexibleSearchService = spring.getBean("flexibleSearchService");
+
+
+
+
+
+ String[] orderList={"00002001"};
+
+ for(String orderNum:orderList)
+        {
+
+String fetchquery="select {o.pk} from {Order as o} where {o.code}='"+orderNum+"'";
+
+
+FlexibleSearchQuery query = new FlexibleSearchQuery(fetchquery);
+SearchResult results = flexibleSearchService.search(query);
+
+for (OrderModel orderModel : results.getResult()) {
+
+  orderModel.setDescription("Cent");
+  modelService.save(orderModel);
+
+
+  print(orderModel.getCode()+" is : "+orderModel.getStatus().getCode());
+}
+
+}
+
+print("done");
+
+------------------
+import de.hybris.platform.catalog.model.CatalogVersionModel
+import de.hybris.platform.core.model.product.ProductModel
+
+findProductsWithoutCategories()
+
+defaultProductService = spring.getBean "defaultProductService"
+catalogVersionService = spring.getBean "catalogVersionService"
+
+def findProductsWithoutCategories (){
+    CatalogVersionModel categoryVersionModel = catalogVersionService.getCatalogVersion("apparelProductCatalog", "Staged")
+    List<ProductModel> productModelList = defaultProductService.getAllProductsForCatalogVersion(categoryVersionModel)
+
+    if(!productModelList.isEmpty()) {
+        for(ProductModel product: productModelList) {
+            if(product.getSupercategories().isEmpty()){
+                println " Product "+ product.getCode() +” does not have any categories associated with it :"
+            }
+        }
+    }
+}
+
+
+----------------
+
+
+
+
+
+-------------------
+
+
+
+import de.hybris.platform.util.CSVConstants
+import de.hybris.platform.servicelayer.impex.ImpExResource
+import de.hybris.platform.servicelayer.impex.ImportResult
+import de.hybris.platform.servicelayer.impex.impl.StreamBasedImpExResource
+
+importImpex("INSERT Language;isocode;active\n;test;true")
+
+def importImpex(String content) {
+final ImpExResource mediaRes = new StreamBasedImpExResource(new ByteArrayInputStream(content.getBytes()), CSVConstants.HYBRIS_ENCODING)
+importService.importData(mediaRes)
+}
+
+
+-----------------
+
+
+//Print all properties of an object
+
+
+result = spring.getBean("flexibleSearchService").search("select {pk} from {Language}")
+// properties
+result.properties.each { println "$it.key -> $it.value" }
+
+
+------------
+
+
+//Print all methods of an object
+
+
+a = spring.getBean("flexibleSearchService").search("select {pk} from {Language}");
+dumpOut a
+def dumpOut( clz ) {
+clz.metaClass.methods.each { method ->
+println "${method.returnType.name} ${method.name}( ${method.parameterTypes*.name.join( ', ' )} )"
+}
+}
+
+
+//Show the hybris type tree
+
+
+import java.util.*;
+flexibleSearch = spring.getBean("flexibleSearchService")
+result = flexibleSearch.search (/select {pk} from {ComposedType}/).getResult()
+Tree tree = new Tree();
+result.each {
+Node node = new Node(it.getCode(), it.getSuperType()?.getCode());
+type = it.getClass().getSimpleName();
+type = type.replace("ComposedTypeModel", "<Composed>");
+type = type.replace("RelationMetaTypeModel", "<Relation>");
+type = type.replace("EnumerationMetaTypeModel", "<ENUM>");
+type = type.replace("TypeModel", "");
+node.setDetails(type);
+tree.getElements().add(node);
+}
+
+for (element in tree.getElements()) {
+node1 = tree.find(element.getValue());
+node2 = tree.find(element.getParentValue());
+if (node1 != null) { node1.setParent(node2); }
+if (node2 != null) { node2.addChild(node1); }
+if (element.getParentValue() == null) { root = node1; }
+}
+
+int level = 0;
+printANode(0, root);
+displaySubTree(tree, level, root);
+
+void printANode(level, Node item) {
+print "."*level;
+println item.getValue() + "(" + item.getDetails() + ")";
+}
+
+void displaySubTree(Tree tree, int level, Node node)
+{
+List<Node> subItems = node.getChildren();
+for (item in subItems) {
+printANode(level+1, item);
+displaySubTree(tree, level+1, item);
+}
+}
+
+public class Tree
+{
+List<Node> elements;
+public List<Node> getElements() { return elements; }
+public Tree() {
+elements = new ArrayList();
+}
+public void add (Node element) {
+elements.add(element);
+}
+
+public Node find(String value) {
+for (it in elements) { if (it.getValue() == value) { return it; } }
+}
+}
+
+public class Node
+{
+private Node parent = null;
+private List<Node> children = null;
+private String details = "";
+private String value = "";
+private String parentValue = "";
+
+public Node(String value, String parent)
+{
+this.children = new ArrayList<>();
+this.value = value;
+this.parentValue = parent;
+}
+
+public setDetails(String nodeDetails)
+{
+details = nodeDetails;
+}
+public getDetails() { return details; }
+
+public List<Node> getChildren() {
+return children;
+}
+
+public void addChild(Node child)
+{
+children.add(child);
+child.addParent(this);
+}
+public addParent (Node parentNode)
+{
+
+parent = parentNode;
+}
+public getValue () {
+return value;
+}
+public String getParentValue() {
+return parentValue;
+}
+public setParent(Node node)
+{
+parent = node;
+}
+
+-------
+//Print hybris type stats
+
+
+import java.util.*;
+import java.lang.*;
+import de.hybris.platform.servicelayer.search.FlexibleSearchQuery
+import de.hybris.platform.hac.facade.impl.DefaultFlexibleSearchFacade;
+import de.hybris.platform.servicelayer.search.SearchResult;
+
+flexibleSearch = spring.getBean("flexibleSearchService")
+flexibleSearchFacade = new DefaultFlexibleSearchFacade();
+typeService = spring.getBean("typeService");
+
+result = flexibleSearch.search (/select {pk} from {ComposedType}/).getResult()
+Tree tree = new Tree();
+result.each {
+Node node = new Node(it.getCode(), it.getSuperType()?.getCode());
+type = it.getClass().getSimpleName();
+isabstract = it.getAbstract() ? "<abstract>":"";
+isjaloonly = it.getJaloonly() ? "<jaloonly>":"";
+type = type.replace("ComposedTypeModel", "<Composed>");
+type = type.replace("RelationMetaTypeModel", "<Relation>");
+type = type.replace("EnumerationMetaTypeModel", "<ENUM>");
+type = type.replace("TypeModel", "");
+node.setDetails(type+isabstract+isjaloonly);
+tree.getElements().add(node);
+}
+
+for (element in tree.getElements()) {
+node1 = tree.find(element.getValue());
+node2 = tree.find(element.getParentValue());
+if (node1 != null) { node1.setParent(node2); }
+if (node2 != null) { node2.addChild(node1); }
+if (element.getParentValue() == null) { root = node1; }
+}
+
+displaySubTree(tree, 0, root, root.getValue());
+
+void printANode(level, Node item, String history) {
+count = "-";
+
+if (!item.getNotLeaf() && !item.getDetails().contains("<abstract>")
+&& !item.getDetails().contains("<jaloonly>")) {
+count = calculateCount(item.getValue())
+}
+
+println history + "\t" + item.getValue() + "(" + item.getDetails() + ") \t"+count;
+
+}
+
+void displaySubTree(Tree tree, int level, Node node, String history)
+{
+List<Node> subItems = node.getChildren();
+if (subItems.size() == 0) {
+printANode(level, node, history);
+}
+for (item in subItems) {
+printANode(level+1, item, history );
+if (item.getChildren().size() != 0) {
+displaySubTree(tree, level+1, item, history + "=>" + item.getValue());
+}
+}
+}
+
+public class Tree
+{
+List<Node> elements;
+public List<Node> getElements() { return elements; }
+public Tree() {
+elements = new ArrayList();
+}
+public void add (Node element) {
+elements.add(element);
+}
+
+public Node find(String value) {
+for (it in elements) { if (it.getValue() == value) { return it; } }
+}
+}
+
+public class Node
+{
+private Node parent = null;
+private List<Node> children = null;
+private String value;
+private String details = "";
+private String parentValue = "";
+private Boolean notLeaf = false;
+
+public Node(String value, String parent)
+{
+this.children = new ArrayList<>();
+this.value = value;
+this.parentValue = parent;
+}
+
+public setNotLeaf(Boolean itIsNotALeaf) {
+notLeaf = itIsNotALeaf;
+}
+public getNotLeaf(Boolean itIsNotALeaf) {
+return notLeaf;
+}
+
+public List<Node> getChildren() {
+return children;
+}
+
+public void addChild(Node child)
+{
+children.add(child);
+child.addParent(this);
+}
+public addParent (Node parentNode)
+{
+parent = parentNode;
+}
+public getValue () {
+return value;
+}
+public String getParentValue() {
+return parentValue;
+}
+public setParent(Node node)
+{
+parent = node;
+}
+public getParent()
+{
+return parent;
+}
+public setDetails(String nodeDetails)
+{
+details = nodeDetails;
+}
+public getDetails() { return details; }
+}
+
+String calculateCount(component) {
+query = "select count({pk}) from {"+component+"}";
+FlexibleSearchQuery fquery = new FlexibleSearchQuery(query);
+fquery.setResultClassList(Arrays.asList(String.class));
+fquery.setCount(1);
+SearchResult<String> result = flexibleSearch.search(fquery);
+return (result.getResult()?.get(0));
+}
+
+
+// Turn on/off logging for any class
+In order to turn the logging on for any particular class, in the latest versions of SAP  hybris Commerce normally you need to make some changes in local.properties and restart the server. After adding the class into the list, you will be able to turn off and on the logging for this class using HAC. However, sometimes we need to turn on the logging temporarily, just to troubleshoot. It is a very common scenario. So I believe, my solution will make things easier for the developers. The following code adds the logger for “jalo.flexibleSearch.FlexibleSearch” with a DEBUG level:
+
+
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.core.config.*;
+import de.hybris.platform.util.logging.log4j2.HybrisLoggerContext;
+
+// example:
+setLogger("de.hybris.platform.jalo.flexiblesearch.FlexibleSearch", "DEBUG");
+
+public String setLogger(String logClass, String logLevel ) {
+final HybrisLoggerContext loggerCtx = (HybrisLoggerContext) LogManager.getContext(false);
+final Configuration loggerCfg = loggerCtx.getConfiguration();
+LoggerConfig loggerConfig = loggerCfg.getLoggers().get(logClass);
+if (loggerConfig == null) {
+// create
+String additivity = "true";
+String includeLocation = "true";
+Property[] properties = null;
+AppenderRef[] refs = [];
+filter = null;
+LoggerConfig createdLoggerConfig = LoggerConfig.createLogger(
+additivity,
+Level.getLevel(logLevel),
+logClass,
+includeLocation,
+refs,
+properties,
+loggerCfg,
+filter
+);
+
+loggerCfg.addLogger(logClass, createdLoggerConfig);
+} else {
+
+loggerCfg.getLoggers().get(logClass).setLevel(Level.getLevel(logLevel));
+}
+loggerCtx.updateLoggers();
+}
+print('done')
+
+
+// Print all URLs from all controllers (RequestMappings)
+The code below shows all request mappings from all controllers of the particular context.
+
+STOREFRONTCONTEXT = "/trainingstorefront";
+
+import de.hybris.platform.spring.HybrisContextLoaderListener;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.bind.annotation.RequestMapping;
+import java.lang.reflect.*;
+import java.lang.annotation.Annotation;
+def f = ContextLoader.getDeclaredField("currentContextPerThread");
+f.setAccessible(true);
+appContext = null;
+Map<ClassLoader, WebApplicationContext> contexts = f.get(HybrisContextLoaderListener);
+for (loader in contexts) {
+contextName = loader.getKey().getContextName();
+if (contextName == STOREFRONTCONTEXT) {
+appContext = loader.getValue();
+}
+}
+
+if (appContext == null) { println ("context is not found. Please set up STOREFRONTCONTEXT (for example, '/trainingstorefront') "); }
+
+beanMap = appContext.getBeanNamesForAnnotation(RequestMapping.class);
+
+for (beanName in beanMap)
+{
+requestMapping(appContext.getBean(beanName).getClass());
+}
+
+String requestMapping(Class clazz)
+{
+classValue = "";
+if (clazz.getDeclaredAnnotations()) {
+for(Annotation annotation :clazz.getDeclaredAnnotations()){
+if(annotation.toString().contains("RequestMapping"))
+printAnnotation(annotation, "class", null, clazz, "");
+classValue = getValue("value", annotation.toString());
+}
+}
+for(Method method :clazz.getMethods()){
+for(Annotation annotation :method.getDeclaredAnnotations()){
+if(annotation.toString().contains("RequestMapping"))
+printAnnotation(annotation, "method", method, clazz, classValue);
+}
+}
+}
+
+String printAnnotation(Annotation annotation, String type, Method method, Class clazz, String classValue)
+{
+print clazz?.getSimpleName() + "\t"+
+((method==null)?"":method.getName()) + "\t" +
+getValue("method", annotation.toString()) + "\t" +
+classValue + getValue("value", annotation.toString()) + "\t" +
+getValue("param", annotation.toString()) + "\n";
+;
+}
+
+String getValue(String param, String annotation) {
+retValue = "";
+annotation.findAll(/$param=\[(.*?)\]/) { full, value -> retValue = value; }
+return retValue;
+}
