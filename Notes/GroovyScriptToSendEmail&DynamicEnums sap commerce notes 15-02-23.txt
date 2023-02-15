@@ -1,0 +1,139 @@
+15/02/23
+
+Groovy Script to send Emails:
+
+// Temp File Creation
+file = File.createTempFile("attachmentFile",".tmp")
+file.deleteOnExit()
+pw = new PrintWriter(file)
+pw.println '  Welcome to the Groovy Email Demo !'
+pw.println 'And Keep Learning '
+
+pw.close()
+
+// Email TO, Subject , body creation
+email = de.hybris.platform.util.mail.MailUtils.getPreConfiguredEmail()
+email.addTo('email1@gmail.com')
+email.addTo('email2@gmail.com')
+email.subject = 'Mail subject'
+email.msg = 'Mail message.'
+
+// Email Attachment Creation
+attachment = new org.apache.commons.mail.EmailAttachment();
+attachment.path = file.absolutePath
+attachment.disposition = org.apache.commons.mail.EmailAttachment.ATTACHMENT
+attachment.description = 'attachmentFile'
+attachment.name = 'attachment.txt'
+
+// Attaching the attachment with Email
+
+email.attach(attachment)
+
+// Sending Email to user which is given in To Section
+email.send()
+
+// Deleting the Temp File created
+file.delete()
+println('email has been sent to User');
+
+-----------------------------------------------------
+
+https://myaccount.google.com/u/7/lesssecureapps?pli=1&rapt=AEjHL4NVlS5PhQGKu40_PysHuPaie8Q03trP-7xpNcgUDwmYxb-W576P8ZiCWQLW5Nxe63lsc1h86fR6W9-EgMn74L1a-YneqQ
+
+
+----------------------
+
+
+Properties to add in Local.property File
+---------
+
+
+
+# Email address displayed in the "Sender" field (mandatory)
+mail.from=ourmail@gmail.com
+
+# Email address used for replying to emails (mandatory)
+mail.replyto=ourmail@gmail.com
+
+
+# If this property is set, the mail session object uses JNDI lookup
+# mail.fromJNDI=java:/comp/env/mail/Session
+
+
+# NOTE: The following settings are only used if you do NOT have
+# configured to get the mail session from the JNDI tree.
+
+# SMTP server used to send emails (mandatory)
+mail.smtp.server=smtp.gmail.com
+
+# A port number of the SMTP server used for sending emails
+# if different from the default port (optional)
+ mail.smtp.port=587
+
+# User account and password used for the authentification with the SMTP server (optional)
+mail.smtp.user=ourmail@gmail.com
+mail.smtp.password=our mail password
+mail.use.tls=true
+
+# SMTP server used to send emails (mandatory)
+# mail.smtp.server=your_smtp_server_here
+
+# A port number of the SMTP server used for sending emails
+# if different from the default port (optional)
+# mail.smtp.port=25
+
+# User account and password used for the authentification with the SMTP server (optional)
+#mail.smtp.user=smtp_user_name
+#mail.smtp.password=smtp_password
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Dynamic and Non-Dynamic Enums
+
+a. In Hybris, we can declare two type of enum, Static and Dynamic. Which basically differ by dynamic attribute (dy
+namic="false" and dynamic="true").
+b. In simple words, I can say static enum(dynamic="false") is generated as the Java enum. In which list of values can
+only be changed during compilation time by changing the items.xml. In case of the dynamic enum(dynamic="true")
+we can change(add/remove) its values at runtime using backoffice or Impex.
+c. Regardless of an Enum type(Static/Dynamic), all its values get stored in enumerationvalues table. You can fetch al
+l values using below flexible query.
+select * from {enumerationvalue}
+d. Static Enum:
+<enumtype code="StaticEnum" autocreate="true" generate="true">
+<value code="value1"/>
+<value code="value2"/>
+</enumtype>
+By default, the dynamic attribute is false(dynamic="false"). You can declare static enum like above. In case of the st
+atic enum, we are not allowed to add/remove value at runtime. If you try to add , you get error like :
+INSERT_UPDATE StaticEnum;code[Unique=true]
+;01213
+"
+
+cannot create StaticEnum with values ItemAttributeMap[ registry: null, type: <null>, data: {code=01213, name={8
+796093054536->de=3D , 8796093054536->en=3D }} ] due to [de.hybris.platform.servicelayer.interceptor.impl.Enu
+merationValidator@197d511d]:Enum type StaticEnum is not dynamic - can not create new enum value 01213. If yo
+u want to add a new value to this type you have to define the enum type as non dynamic at items.xml (needs system
+update afterwards).
+"
+
+e. Dynamic Enum:
+
+<enumtype code="OrderStatus" autocreate="true" generate="true" dynamic="true">
+<value code="CREATED"/>
+<value code="ON_VALIDATION"/>
+<value code="COMPLETED"/>
+<value code="CANCELLED"/>
+</enumtype>
+
+If you want to have an enum which can be changed runtime, you should declare it with dynamic="true".
+
+f. Switching between enum types is possible at runtime. We need to change dynamic flag and then update the system
+.
+g. In Brief , With the hybris enumtype, you have the option to define a static enum or a dynamic enum. Static (dyna
+mic="false") means, that the enumeration only contains the defined elements. During runtime you will never be able
+to add elements to the enum. This is different when you use a dynamic enum (dynamic="true"). With dynamic enum
+erations you can add values during runtime. So if you want your enum to be static, use dynamic="false". If you want
+to add values during runtime, use dynamic="true".
+h. If dynamic ="false", it means it acts as java_Enum (it cannot be modified).
+If dynamic ="true", it acts as hybris_Enum (i.e, you will able to add the additional Enumeration value Types at run
+time through hac).
