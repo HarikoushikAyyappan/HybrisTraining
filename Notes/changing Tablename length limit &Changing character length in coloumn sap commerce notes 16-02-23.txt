@@ -1,0 +1,28 @@
+16/02/23
+
+Changing Table name Length Limit in Hybris:
+
+
+
+1. The maximum length for a deployment table name in Hybris is 24 characters.
+2. This is defined in hybris/bin/platform/resources/advanced.properties:
+deployment.tablename.maxlength=24
+
+3. We can override the default value by specifying our own value in config/local.properties:
+deployment.tablename.maxlength=30
+
+4.We must be  sure to check the database server which may have its own limitations. For example, older versions of Oracle limi
+t the table name length to 30 characters.
+
+
+Changing character limit length of a coloumn:
+
+The length limit of characters in a particular coloumn is 255.
+
+If we want to add more characters we have to code in items.xml file like,
+
+<persistence>
+<coloumntype>
+  <value> varchar(500)</value>
+  </coloumntype>
+  </persistence>
