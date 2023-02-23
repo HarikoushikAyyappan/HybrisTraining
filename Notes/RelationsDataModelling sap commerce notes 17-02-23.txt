@@ -1,0 +1,93 @@
+17/02/23
+
+Relations:
+
+1. Relations are defined in *-items.xml File of each
+Extension in the relation tag.
+2. Relations are defined between two itemtypes.
+3. Relations can be of below Types :
+
+a. 1-1 Relation
+b.1-many Relation
+c. Many-many relation
+1. 1-1 relation :
+
+Hybris doesn’t support direct creation of 1-1 relation. If
+you try to do so , build time error will come.
+
+<relation code="Teacher2StudentRel" localized="false" generate="true"
+autocreate="true">
+<sourceElement type="Teacher" qualifier="teacher" cardinality="one">
+<modifiers read="true" write="true" search="true" optional="true"/>
+</sourceElement>
+<targetElement type="Student" qualifier="student" cardinality="one" >
+<modifiers read="true" write="true" search="true" optional="true"/>
+</targetElement>
+</relation>
+
+This is not supported by Hybris.
+
+2. 1-many Relation :
+
+1-Many relation is defined in 2 ways :
+
+a. By Declaring Relations
+b.By Collections approach
+
+a. By Declaring Relations
+
+<relation code="Teacher2StudentRel" localized="false" generate="true"
+autocreate="true">
+<sourceElement type="Teacher" qualifier="teacher" cardinality="one">
+<modifiers read="true" write="true" search="true" optional="true"/>
+</sourceElement>
+<targetElement type="Student" qualifier="students" cardinality="many" >
+<modifiers read="true" write="true" search="true" optional="true"/>
+</targetElement>
+</relation>
+
+Here we are saying that One Teacher can be teaching multiple Students. So, relation between Teacher and
+Students is 1-many.
+
+But Relation between Students and Teacher is 1-1.
+
+In Teacher Model.java, we will have collection of Students.
+
+However, in StudentModel.java, we will just have reference of Teacher (this is why we are saying that there
+is 1-1 relation between Student and Teacher) which means 1 student can be studying under only one Teacher.
+
+From above Explanation, it is evident that this is Bi Direction Behavior.
+
+Also, in Teacher table , there will be no reference of Student.
+
+But you will find a column with name teacher in Student table.
+
+b.1- many behavior with Collections approach :
+
+If we say that one SuperBeg can have multiple Pockets (Relation between SuperBeg and Pocket)
+but we don’t want to declare any relation between Pocket and SuperBeg , then this is achieved via
+Collections approach.
+
+This is Unidirectional approach. You will find reference of pockets only in SuperBegModel.java but
+there will be no reference of superBeg in PocketModel.java
+
+Here in DB , you will find that in SuperBeg table , we will have column with name pockets and value of pockets will
+be saved comma separated but there will be no reference of superBeg in Pocket Table.
+
+This type of approach is not recommended as there is limit of saving only 255 characters in one column
+(however , using this approach makes the data fetching bit faster).
+
+3. Many-many relation:
+
+If we say each SuperTeacher is teaching many SuperStudents and similarly each SuperStudent is
+studying under many SuperTeachers , then this behavior is called as many to many behavior.
+
+Here In SuperTeacherModel.java , you will have collection of SuperStudents and similarly in
+SuperStudentModel.java , you will have collection of SuoerTeacher.
+
+In DB , you will not find any reference of each other in individual tables. However , there will be a 3rd table
+created with name “SupTeach2SupStudRel” where you will find 2 columns
+
+a. SourcePK [pk of SuperTeacher row]
+b.TargetPK [pk of SuperStudent row]
+
