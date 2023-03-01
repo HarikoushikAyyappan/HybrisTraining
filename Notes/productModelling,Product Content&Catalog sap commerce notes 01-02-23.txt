@@ -1,0 +1,108 @@
+01/03/23
+Product Modelling
+
+sap commerce allows to match our specific business needs through product and data modelling.
+
+The same goal can be achieved by Generating Beans and Enums,Product Modelling,Type System.
+
+Good understanding of Generation of Beans and Enums,ProductModelling,TypeSystem makes our process easy.
+
+Generating Beans and Enums:
+
+ We can provide a configuration file in our custom extension in which we can specify the class name,attributes,possible super class of pur Java
+ Bean or Enums through which we can generate our custom Java Bean and Enums,
+
+ Product Modeling:
+
+ Product Modelling can be done by two ways namely TypeSystem and Classification functionality.
+
+ The Type System
+ A type is a template for objects.
+
+ Types define product data that objects may carry and specify relations between objects, and also make product data
+ persistent by categorizing the data and relating it to database fields.
+
+  Every object stored in Platform is a type instance.
+
+  Generating Beans and Enums
+  In SAP Commerce, it is possible to generate our custom Java Beans or Enums. In your extension, you can provide a configuration file in which you specify the class name, attributes, and a possible superclass of your Java Bean or Enum.
+
+  Definitions of these Java Beans or Enums are merged across extensions. For example, if two extensions specify a bean and enum with the same, fully classified class, the generated class includes the attributes from these two extensions. This way, you can extend already existing beans and enums, and do not have to subclass them, or replace references to the former bean and enum.
+
+  Overview
+  To generate a Java Bean or Enum, you need to create a file named extensionname -beans.xml for your extension.
+
+  It should contract the bean.xsd schema compatibility and should be located in the resources folder of the related extension.
+
+  The build process picks this file and generates Java Beans out of its content.
+
+  Every beans.xml file should fulfill the contract of the correct XML file. The file can contain the following:
+
+  Bean class definition:
+  Every bean class definition may provide the name of the other class that it extends.
+  Every bean class definition may provide a custom template used to render this Java Bean.
+  Every bean class definition may contain any number of property definitions. A property definition is a base to generate getters and
+   setters for properties.
+  Every bean class definition may contain a description.
+  Every property definition must contain a property name and a property type.
+
+  Enum class definition:
+  Every property definition may contain a description.
+  Every enum class definition must contain at least one enum value.
+  Every enum class definition may contain a description.
+  Such a single bean and enum definition provides the information to fully create a Java Bean or Enum class that is serializable. It also has a no-argument constructor, and enables access to properties using the getter and setter methods. For enum only, possible enum values must be provided, and enum is implicitly serializable. All of those types declared above do not need a dependency to any item from the type system.
+
+  The same bean and enum definition can be kept in different extensions, meaning different beans.xml files.
+  The expected result is to have one bean and enum definition with a merged list of all attributes.
+   During the merging phase, there is a logical validation performed that checks if the bean and enum definitions fulfill some constraints.
+
+   Product Content and Catalogs:
+
+     Working with Catalogs:
+       Platform Catalogs hold,structure and manage Products and Product Information.
+
+       Catalogs offer the following features and functionality,
+
+        Structuring Your Collection with Products and Categories:
+           Products are the basic elements of each catalog.We can arrange them in catagories by grouping and using that we can build
+            a hierarchical structure.
+        Catalog and Catalog versions:
+           Categories are held in Catalog versions.To maintain our collection within a basic process,we use two or more catalog versions
+           associated with an object called catalog.
+           Generally we have Staged version for editing and onine version for exposing as a webshop.Staged can be converted to online by synchronizing.
+        Managing Multiple Product Catalogs in a Catalog System:
+           A Catalog system is a group of catalogs and it represents a framework which maintains multiple varying product catalogs.
+           A Catalog system can include multiple input catalogs.
+           A catalog system is setup around a master catalog that contains leading versions of product catalog.
+           The catalog contents are synchronized among the defined Catalog versions .
+        Synchronizing Catalog Versions:
+           The catalog contents can be synchronized in one directional way .
+           The synchronization between the versions is represented as steps in maintaining the catalog.
+           We can synchronize among the same and different catalog versions within the Sap Commerce.
+        Defining Product Attributes:
+           Product Atrributes specify the properties of products.
+           They hold information about the products.They have a name and a value.
+        Classification Guide:
+           The Classification functionality allows to define attribute in a way different to the Typing method.
+           The Attributes defined using Classification functionality are called Classification Attributes.
+           The Attributes based on Classification are also called Category features.
+           They can be defined in runtime itself without turning off the server.
+           Through classification, we can flexibly allocate category features that may change frequently.
+           we can easily define and modify them because you manage them independently of the product type.
+           Available Catalog features can be organized independently from product categories in separate classification system.
+           In the separate classification system,They are structured into  classifying categories.
+           Through these classifying categories,we can assign a category feature to one or more product categories used in catalogs.
+           That means that all category features of the classifying categories are available within all products included in the
+            assigned product categories.
+           Therefore, each category feature assigned to a category of a catalog structure is inherited by all subcategories.
+
+
+
+
+
+
+
+
+
+
+
