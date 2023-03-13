@@ -1,0 +1,250 @@
+Catalog Guide:
+  Catalog extension provides catalog functionality for structuring,holding ,managing product and product information.
+
+  A catalog can contain a number of catalog version objects each of which contains a number of category objects .
+   Each category object can contain catalog objects,product objects or Classification objects.
+
+Catalog  visibility in Backoffice:
+  In addition to the platform type system access rights,catalog extension runs a second round of evaluation of restrictions of catalog access rights
+
+  It does not mean that it levies restrictions on accessing the entire catalog or catalog versions but on the user's right to manipulate
+   various contents such as products,categories,prices,others etc.
+
+  When we initialize the system and have it create sample data, these rights are created automatically for the employeegroup usergroup .
+   we can check the restrictions by looking up the usergroup. If we add new employees to the system, they will be put into the
+   employeegroup by default.
+
+  The catalog extension uses personalization rules (search restrictions) to evaluate catalog-editing rights.
+  Since only the employeegroup usergroup has these restrictions by default, a user must be in that usergroup or one of its subgroups to
+   have those rights.
+
+  Thus, catalog and catalog version specific data (such as synchronizations or active version settings) as seen in the Catalog Editor or
+  Catalog Version Editor is usually governed by the settings provided in the access restrictions of the relevant types
+   (here: catalog and catalog version).
+
+   In contrast, the accessibility of specific catalog version contents in terms of read/write access differentiation is administrated
+   through (direct or indirect) membership in employeegroup.
+
+   A user who is not in the employeegroup or one of its subgroups can bypass this restriction system.
+   A user who bypasses the restrictions, however, may have access rights to catalog versions in the web application that the user is not
+    intended to have. In this way, we can allow users to browse catalogs we do not want them to see.
+
+ Catalog Visibility in a Web Application:
+   Visibility of Products for Customers:
+     Catalog is a list of products that are available along with product attributes such as Price etc.We can restrict a customer from
+     viewing specified products  evn if products are generally available. This is called Visibility Functionality.
+
+     The visibility of a product to a customer is determined in five steps. These all five steps has to get success inorder for a successful
+     visibility to a customer,
+                    1.Correct category URL match
+                    2.Catalog version Active check
+                    3.Category Visible
+                    4.Date Range Match
+                    5.Product Approval
+   Steps 1 and 2 are only checked at the very start of the session. The three remaining steps are checked on each customer mouse click.
+   Another difference is that the catalog extension itself deals with steps 1 and 2, while the other steps use Platform restrictions.
+
+   This example of a URL pattern https?://+/bluestore($|/.*) matches all URLs that conform to all the following conditions:
+
+   Have http:// or https:// as their protocol (http with an optional (?) s, followed by ://)
+
+   Have at least one character but the slash after the protocol (+; the circumflex ^ negates the term, the plus sign + indicates at least one occurrence)
+   Contain the term /bluestore
+   End with any of the following terms
+   End of line (indicated by the dollar symbol $; for example: /bluestore)
+   / plus any string (.*) (such as /bluestore/mypage.html)
+   we may set up several URL patterns for one catalog.
+
+     Category Visibility:
+       If a product category is visible to a specific customer in a catalog depends on whether the category itself is visible to the
+       customer and the user group the customer belongs to.
+        If the customer or the group the customer belongs to is not explicitly allowed to view a specific category in the platform,
+        the category will not be visible for the customer or the customer's group in the shop.
+
+       Categories inherit access rights to their children. If you set the root category to be visible to a certain customer,
+       that customer will be able to view not only the root category itself, but also all subcategories of it.
+       On the other hand, user groups also inherit. If a usergroup has the rights to view a certain category, any subgroup of that
+       usergroup will be able to view that category as well.
+
+       For this reason, SAP Commerce recommends that we put all customers into a customergroup or into one of its subgroups so
+       that you can maintain the visibility rights more easily. If you do not work with usergroups and their visibility,
+       we will have to maintain the visibility rights on a per user basis, which is more work and more complicated.
+
+       Matching DateRange:
+        The Catalog extension supports the facility of assigning value of span of which a particular product is available in the market.
+       Approving Product
+        A product that is a part of the catalog is in one of three possible approval states: approved, check, and unapproved.
+        Only products in the approved state are visible, the two others indicate that the product is not in a state to be
+        synchronized and consequently to be offered for sale.
+        You can change a product approval state in its editor. Go to Catalog  Products, search for your product by its name or browse to it.
+         Click it to open up its editor and change the approval state in the ATTRIBUTES tab.
+
+        we can also perform bulk approval of your products using the Bulk Edit or Bulk Approval actions.
+
+        Using the Catalog Extension with Web Application:
+          The catalog extension relies on Restrictions for visibility and access settings. Without set restrictions, the catalog extension
+           does not work properly and users may be allowed access to catalog versions they are not intended to see, and vice versa.
+
+          This is not critical with the Backoffice, where all users must log in and have their restrictions set based on their account.
+          However, in a web application, such as a web shop, you need a way of handling restrictions related to the catalog extension
+          without requiring users to log in. You can use Platform filters to do this. They provide flexibility. we can use the following
+           filters to handle catalog version activation:
+
+            SimpleCatalogVersionActivationFilter
+             DynamicCatalogVersionActivationFilter
+
+        The SimpleCatalogVersionActivationFilter filter assures that the configured catalog versions are set as session catalog versions.
+         The DynamicCatalogVersionActivationFilter filter takes care of activating the catalog versions at runtime.
+          Below is an example that shows how to add the SimpleCatalogVersionActivationFilter to the SAP Commerce filters chain used in our
+          Web application. It presents the current implementation in the springmvcstore extension as shown in the following examples from
+          the springmvcstore-web-spring.xml file
+          <bean id="springMvcStoreFilterChain" class="de.hybris.platform.servicelayer.web.PlatformFilterChain">
+          		<constructor-arg>
+          			<list>
+          				<ref bean="log4jFilter"/>
+          				<ref bean="dynamicTenantActivationFilter"/>
+          				<ref bean="springMvcStoreRedirectFilter"/>
+          				<ref bean="sessionFilter"/>
+          				<ref bean="springMvcStoreDataSourceSwitchingFilter"/>
+          				<ref bean="springMvcStoreCatalogVersionActivationFilter"/>
+          			</list>
+          		</constructor-arg>
+             </bean>
+
+             <bean id="springMvcStoreCatalogVersionActivationFilter" class="de.hybris.platform.servicelayer.web.SimpleCatalogVersionActivationFilter" >
+          		<property name="catalogVersionService" ref="catalogVersionService"/>
+          		<!-- <property name="onlySetOncle" value="true"/> --> <!-- true by default, set to to false, if there is a wish to do that -->
+          		<!-- property catalog.versions.default will be read from properties file  -->
+          		<aop:scoped-proxy/>
+             </bean>
+
+             <bean id="springMvcStoreRedirectFilter" class="de.hybris.platform.servicelayer.web.RedirectWhenSystemIsNotInitializedFilter">
+          		<constructor-arg>
+            			<value><!-- nothing - redirect to default maintenance page --></value>
+            		</constructor-arg>
+            		<constructor-arg>
+            			<list>
+            				<value>login</value>
+            				<value>static</value>
+            			</list>
+            		</constructor-arg>
+             </bean>
+
+             <bean id="springMvcStoreDataSourceSwitchingFilter" class="de.hybris.platform.servicelayer.web.DataSourceSwitchingFilter">
+             </bean>
+
+          Setting a Default Catalog During System Initialization or Update
+          During a SAP Commerce initialization or update, the catalog manager ensures that there is a default catalog.
+          The catalog manager createEssentialData(...) method retrieves the catalog, which is set as default.
+
+          If no catalog is set as default, the catalog manager creates a new catalog called default and creates an
+          on-line (Online) and an off-line (Staged) catalog version within that new catalog.
+
+     Modeling Product Variants
+     When working with products, you need to model product variants. SAP Commerce allows several approaches to implement such a model.
+
+     Variants are products that differ in some aspect from one another, but are based on the same basic model.
+     An example for variants is color and size for t-shirts. The base product is a t-shirt, the variants are a red t-shirt or a
+      blue t-shirt, a t-shirt in size L, a t-shirt in size XL, and so on.
+
+     Using a Subtype of Product and a Subtype of VariantProduct
+     The intuitive approach of simply deriving from both types directly  does have a major limitation.
+
+     The three methods of modelling Product Variants:
+       1.Using Inheritance
+       2.By using Classification System
+       3.Using Categorization
+   Implementing Size Conversion Systems for SAP Commerce Catalogs:
+     Implementing Size Conversion Systems for SAP Commerce Catalogs
+     Clothes sizes are a numerical indication of the fitting size of a piece of garment for a person.
+      Several different size systems for clothes are used today worldwide. In some regions, it is even customary to use
+      different shoe-size systems for different types of shoes (for example: men's, women's, children's, sport or safety shoes).
+      If we are working on a project for a clothing company, we may face such requirements for your system.
+
+     The requirements for our project were:
+
+     Each product is available in various sizes
+     Each size can be different for each sizing system
+     Each catalog (which is bound to a country) has one sizing system
+     Possibility to change a catalog's sizing system and it should affect all displayed size values "on-the-run"
+
+     We should create an itemtype called SizingSystem for size-conversion systems. Each instance of the itemtype will be
+     identified by a code attribute (which will be the country's code) and will contain a map of SAP and display values.
+
+     Next, we have to extend the Catalog itemtype by adding the attribute sizeSystem of SizingSystem type.
+     This will provide a fully configurable mechanism to manage the content of size-conversion systems and connections between
+      themselves and Catalogs.
+
+     The internal relation between CatalogVersion and products makes it possible to get the proper size-conversion system for each
+      product's size.Here is our getSize(ctx) method that returns display size value.
+      As we can see the size conversion system is gotten from the product's catalog, so changing the size conversion system for this
+      catalog will automatically affect all of the ProductSize objects from its catalogversion.
+      This is the only business logic that we have to implement.
+
+      public String getSize(SessionContext ctx) throws JaloInvalidParameterException,JaloSecurityException{
+
+              String size = "";
+
+              // get serial size Map from this object
+              Map serialSize = (Map) getAttribute(AdidasSizeVariant.SERIALSIZE);
+
+              // if there is no serial size for this object
+              if (serialSize == null) {
+
+                  String errMsg = "No serial size set for this item - " + this.toString();
+
+                  if (isApproved((EnumerationValue) getAttribute(CatalogConstants.TC.ARTICLEAPPROVALSTATUS))) {
+
+                      throw new JaloSecurityException(errMsg);
+
+                  } else {
+                      log.warn(errMsg);
+                      return null;
+
+                  }
+              }
+
+              // get sizing system that is connected to active catalog
+              SizingSystem sizingSystem = BackendManager.getInstance().getSizeSystem(
+                      ((CatalogVersion) getAttribute("catalogVersion")).getCatalog());
+
+              // if no sizing system set throw exception
+              if (sizingSystem == null) {
+                  throw new JaloSecurityException("There is no sizing system set");
+              }
+
+              // get Code of this sizing system
+              String sizeSystemCode = sizingSystem.getCode(ctx);
+
+              // get SAP size form serial size map and then get the display size value from size conversion map
+              size = (String) sizingSystem.getAllSizeConversion().get( (String) serialSize.get(sizeSystemCode) );
+
+              return size;
+          }
+   Extensibility of Catalog Framework:
+      A catalog system is a group of SAP Commerce catalogs. It represents a framework for managing catalogs enabling you to
+      maintain the content of several product groups.
+      In addition, each catalog can have versions. This means you can have several versions of the same catalog, where one can be published and shown to the customers, while you can edit and update the other version in order to prepare it for future publications. This way, you can always be online with your product catalog, while updating another version of your content. Catalog and Catalog Version example:
+
+      Clothing Catalog
+      Summer Season 2011
+      Summer Season 2010
+      Winter Season 2011
+      Winter Season 2010
+
+      Hardware Catalog
+      Summer Season 2011
+      Summer Season 2010
+      Winter Season 2011
+      Winter Season 2010
+Reference:
+https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b74cb8186691014a19de16c7b468699.html
+
+
+     
+
+
+
+
+
+

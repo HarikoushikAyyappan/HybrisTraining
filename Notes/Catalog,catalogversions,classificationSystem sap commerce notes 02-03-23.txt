@@ -1,0 +1,364 @@
+02/03/23
+
+Structuring  Collection with Products and Categories
+
+ Product:
+  Products are the basic element of our collections and sales catalog.
+  Products are the data structure that represents items of merchandise ie) they represent the real time products which can be sold in market.
+  eg.Camera,mobile etc.
+  They are imported from third party systems such as Enterprise Resource Planning(ERP),Product Information systems(PiM) or by file import.
+  They can be created and edited manually in backoffice.
+
+ Creating and Nesting Categories:
+  Products can be grouped into categories in order to maintain a hierarchical structure.
+  Catagories can also be grouped into super categories and subcategories.
+
+          Eg.             SystemComponents
+                           -----|------
+                          |            |
+                      Processors     MotherBoards
+                    -----|-----
+                    |          |
+                  Intel       AMD
+                |   |   |        |
+               Products          Products
+
+ Structuring Catalogs:
+  The structuring of the catagories depends on the purpose of the catalog.
+  If we create categories for user navigation of webshop frontend, we should make it as such it eases the user interface.
+
+ Creating Categories
+  Categories, like products, are usually imported from third-party sources such as Enterprise Resource Planning (ERP) systems,
+  PIM systems, or by file import.
+  They can also be created and edited manually in Backoffice Framework.
+
+  Procedure
+   Navigate to Catalog  Categories.
+   Click  to open theCreate New Category window.
+   Fill in all mandatory fields. It is recommended not to use the special characters “<” or “>” within the Category Name or Code (Identifier) fields. The tags result in error when connecting to the CDS Catalog service endpoint.
+   Click Finish.
+   In the collection browser, select your newly created category and go to the Category Structure tab.
+   In the Category Structure tab, insert the category within the target hierarchical category structure
+   Select one or more Supercategories to group this category together with comparable categories below one or more supercategories.
+   Select one or more Subordinate Categories to group other categories below this category; consequently the latter category becomes the supercategory of the selected ones.
+   Select one or more Included Products to logically group products in this category.
+   In the Multimedia tab, specify a category image and other media relevant for this category. You can also use the Additional Multimedia Objects group to manage product images that belong to products contained in this category.
+   Only SAP Commerce administrators can access the Administration tab. It provides editing data including primary key, changes, and copies.
+
+ Controlling the visibility of the Category:
+  The visibility of Category is seen if we explicitly define the usergroups or users who can access the catagory and the catagory is visible
+  if it contains visible products.
+  The visibility of the Category controls the visibility of its subcategories and its products under it.
+
+  Procedure
+  On the Backoffice Administration Cockpit, access Catalog  Categories to display the list of categories.
+  Select the category that you want to update.
+  In the General tab, go to the Category Visibility section.
+  Update the Visible to list by adding one or more user groups or individual users in the fields provided.
+   we can also control the category visibility using personalization rules that check the category settings to verify which
+   users are authorized.
+   Click Save to continue action. Otherwise, click Refresh
+
+ Adding and Managing Products in Categories
+  Categories and products, including their category assignment, are imported from third-party sources, such as from ERP systems, from
+  PIM systems, or by file import.
+  Products can also be assigned to categories manually in the Backoffice Framework.
+
+  Procedure
+  On the Backoffice Administration Cockpit, access Catalog  Products to display the list of products.
+  Select the product that you want to add to a category.
+  Click Category System
+  In the Categories Containing This Product section, define one or more Supercategories in the fields provided.
+  Click Save to add the product to the category. Otherwise, click Refresh.
+
+ Adding Media Items to a Category
+  Media items, such as product images, are usually referenced by the product.
+  On the Multimedia tab of the product editor you can reference images and other multimedia items.
+
+  Procedure
+  On the Backoffice Administration Cockpit, access Catalog  Categories to display the list of categories.
+  Select the category where you want to add the media item.
+  Click the Multimedia menu.
+  Define a visual for the category in the Images section.
+  Go to the Additional Multimedia Objects section to reference media items related to the products in the category.
+  Click Save to add the media item. Otherwise, click Refresh.
+
+
+  Catalogs and Catalog Versions:
+
+  Categories are contained in catalog versions.
+  A catalog version can represent the collection of products you offer at a certain point in time.
+  To maintain your collection within a basic process, you typically contain two or more catalog versions in an object called a catalog.
+  For example, while you can have one catalog version for editing the content (the Staged version), you can use another catalog version for
+  propagation as a web shop (the Online version).
+   Holding Your Category Structure in Catalog Versions:
+    To use a category structure to represent your collection—or parts of it—you contain it in catalog versions.
+    A catalog version is a container for categories that contains products in one or multiple categories.
+    A SAP Commerce catalog version item is similar to the concept of a product catalog.
+    Contrary to this concept, a SAP Commerce catalog item is a container for multiple catalog versions.
+
+   Adding a Category to a Catalog Version
+    We can add categories to a catalog version by different methods:
+
+   Assign a category to another catalog version in Backoffice. For information, see Adding a Category to a Catalog Version.
+   Add a category to a supercategory of another catalog version. For information, see Structuring Your Collection with Products and
+   Categories.
+   The category, one of its supercategories, or one of its catalog versions is synchronized. For information about synchronization,
+   see Synchronizing Catalog Versions
+
+   Controlling Visibility and Access to a Catalog Version:
+
+    The visibility of a catalog version in a web front end, such as a webshop, is determined by the visibility of the categories
+    included in the catalog version.
+
+    To set access rights for a catalog version, go to the Permissions tab of the catalog version editor.
+    we can edit the lists for User accounts with write permissions and User accounts with read permissions.
+
+    For each list, you can add one or more user groups or individual users.
+
+    Procedure
+
+    In the Backoffice navigation tree, click Catalog  Catalog Versions.
+    The Catalog Versions collection browser opens up with the Staged catalog version listed.
+    Click the Staged catalog version.
+    The Catalog Versions collection browser displays on the CATALOG VERSION tab.
+
+    Click CONTENT to switch to the CONTENT tab.
+    In the CONTENT tab you have access to the Create a new category function available from the Top level categories field.
+
+    Click Create a new category.
+    The Create a new category wizard opens up.
+
+    Complete the Catalog version and Identifier fields and click DONE
+
+  Adding a Catalog Version to a Catalog in Backoffice:
+
+   Procedure
+   In the Backoffice navigation tree, click Catalog  Catalogs.
+   The Catalogs collection browser opens up with the Default catalog.
+
+   Click the Default catalog.
+   The default catalog editor area shows up on the COMMON tab. Notice the Create new Catalog version field.
+
+   Click Create new Catalog version.
+   The Create new Catalog version wizard opens up
+
+   Complete the required fields in the wizard.
+   Click … in the Catalog field and choose our catalog
+
+   Complete the Catalog Version field.
+   Click Done.
+   Click SAVE in the collection browser to save the changes in your catalog.
+
+  Managing Multiple Product Catalogs in a Catalog System:
+
+  An example of a Catalog system is , there will be two input catalogs called Supplier A and Supplier B before a master Catalog.
+  Below the master catalog there will be three catalogs called Country A,Country B,Country C.
+
+ Defining  Catalog Maintenance Process:
+
+  Before setting up a catalog system, SAP Commerce recommends that we define our catalog maintenance process.
+  This is important because a catalog system should reflect your organizational structures and responsibilities.
+
+  For example, you may want to include a country-specific web page owned by a foreign subsidiary.
+  Typically, you manage such a page in a separate catalog, which receives the basic collection data from a master catalog to be
+  edited and approved locally.
+
+  Such a country-specific catalog can have its own staged and online versions for editing and propagation.
+
+  Specific access rights ensure writing permissions for the local team, however several headquarter's representatives may have reading or
+  writing access for supporting tasks.
+
+    Example of a complex catalog system.
+
+     It consists of multiple input catalogs (top), a master catalog, and two country-specific catalog subsystems
+     (for United Kingdom and France).
+      The example assumes that most output catalogs (bottom) are actively managed by Brand Managers.
+      However, the Vendors output catalog has an additional process step for audience-specific modifications.
+      Arrows indicate synchronizations between the subordinate catalog versions.
+  Setting up Catalog System:
+    To set up a catalog system, you simply create the required catalogs and connect them by synchronizing jobs between
+     catalog versions.
+    You organize the catalogs involved in such a way so as to establish a synchronization process from input to output.
+    Synchronization operations among catalogs are realized between the contained catalog versions.
+
+  Synchronizing Catalog Versions:
+    A synchronizing operation copies specified content from a source catalog version to a target catalog version, for example
+    a staged to an online catalog version. That means, the items referenced by the target catalog versions are overwritten to match the
+    items referenced by the source catalog version.
+    A synchronised operation can be applied to entire catalog version and can be done to selected categories or products.
+    Two synchronizing operations can be done inorder to bidirectional update procedures.
+    But the default is the synchronizing operation can be applied from source to target only.
+    By default, only items referenced by the source catalog version are synchronized, and those items of the target catalog
+    version that are not referenced are not affected.
+     For example, let's say the target catalog version consists of the contents of two other catalogs, clothes and hardware.
+     If the hardware catalog is synchronized, the clothes catalog-related part of the target catalog version remains unchanged.
+
+  Synchronizing Operations in Catalog Versions within a Catalog:
+   There are specific use cases for synchronizing catalog versions that are part of a single catalog
+   Seasonal Switch
+   For example, you can use this for switching from one catalog version to another catalog version: Let's say, a catalog for clothes has five catalog versions:
+
+   Spring
+   Summer
+   Fall
+   Winter
+   Online
+   The Online catalog version is in use for the web shop front end. By synchronizing from Summer to Online, you can switch the product
+   line in the shop frontend to the summer edition.
+   Synchronizing from Fall to Online replaces the summer product line with the fall product line, and so on.
+
+   Separated Input Catalog Versions for Different Content Types:
+
+    To realize distributed import scenarios, you can use separate catalog versions, for example for different content types.
+
+    Let's say, you receive your product data from different sources:
+
+    Product names and descriptions are loaded from CSV files provided by a supplier.
+    Product images are loaded from a file system maintained by an advertising agency.
+    Product prices are retrieved from an Enterprise Resource Planning (ERP) system.
+    Each source provides a type of product data with each data set related to a defined product.
+    Each product data type is loaded into a different catalog version to enable different loading and clearing routines.
+    These different catalog versions are consolidated by synchronizing operations to a master catalog representing a single source of truth.
+
+    Defining Product Attributes:
+     A developer always does data modelling and product modelling before getting into coding.
+
+     Product Attributes are defined in two ways 1.Typing method(using items.xml) 2.Classification system
+
+
+     Catalog Guide:
+
+      The catalog extension provides catalog functionality for holding, structuring, and managing products and product information.
+      SAP Commerce represents catalogs by a type structure as shown in the following diagram: a catalog can contain a number of
+      catalog version objects, each of which can contain a number of category objects.
+      Category objects can contain catalog objects, product objects or classification objects.
+
+    Catalog View and Editing Rights:
+     In addition to the platform type system access rights, the catalog extension runs a second evaluation of restrictions on
+     catalog access rights.
+     These restrictions do not interfere with the access of catalogs or catalog versions.
+     They are meant to restrict employee rights to manipulate a catalog version content, such as products, categories, prices, others
+     The catalog extension uses personalization rules (search restrictions) to evaluate catalog-editing rights.
+
+    Catalog Visibility in a Web Application:
+     Visibility of Products for Customers:
+      A catalog is a list of products that are available, along with product prices (among other attributes).
+      The catalog extension also allows you to block specified customers from viewing specific products, even if the products are
+      generally available. This functionality is called visibility.
+      Visibility Checks for Product
+
+      The steps are:
+
+      Does the catalog URL pattern match?
+      Is the catalog version active?
+      Is the category visible?
+      Products are usually put into categories. If a category is not visible to a customer or customer group, the products
+      contained in the category will also not be visible.
+
+      Does the date range match?
+      If a product is visible or not can also depend on the current date. For example, selling ice hockey equipment
+      in June may not be very successful. Therefore, we can limit a product visibility to a certain date range.
+      The product is not visible before the start of that date range or after its end.
+
+      Is the product approved?
+      A product is always in one of three possible states: check, unapproved, and approved. An approved product is visible
+       if all other checks pass, a product set to check or unapproved is not.
+
+     Modeling Product Variants:
+      When we work on products we need to model Product Variants ie) Product which differ in certain aspects.Eg. Shirts which differ in size.
+
+     Using a Subtype of Product and a Subtype of VariantProduct:
+
+      If there are two items such as Product and Variant Product. MyProduct and My variantProduct extends Product and MyProduct respectively.
+      As a result,MyVariantProduct will not get Product's Attributes, So we have to make VariantProduct extend Product.MyProduct extend
+      Product.MyVariantProduct extend VariantProduct.
+
+     Using a Subtype of VariantProduct in Combination with Classification:
+       Eg.We have a base item called Product and we have two items MyVariant1 and MyVariant2 that extends from Product.We can define
+        Classification Classes and their attributes and make them available to the items assigned.
+
+     Building Variants through Categorization:
+       A further approach to building variants is by using SAP Commerce's categorization functionality.
+       Eg,there are the categories Size S, Size M, Size L, and Size XL on the one hand, and the categories Color black, Color blue,
+        Color green, and Color red on the other. By putting MyT-Shirt into the categories Size L and Color red, MyT-Shirt is marked
+        as a red t-shirt in size L.
+
+   Synchronizing Catalogs:
+     The single catalog that is visible to your customers is called online, and the catalogs that are not visible to customers are staged.
+     A standard synchronizing operation is the act of updating the online catalog with at least one of the staged catalogs.
+     If you synchronize a staged catalog, the online catalog will then contain all values from that staged catalog.
+
+     A synchronizing operation can be applied to an entire catalog version, but it can also be applied to selected categories or products.
+     There are three Synchronization status which represents the status of synchronization,
+      Green mark- Indicates that a source item is synchronized with the target item.
+       Red mark:Indicates that a source item has been changed and needs synchronization with the target item.
+       Error mark: Indicates that an initial synchronization is needed. The source catalog version has never been synchronized with
+        the target catalog version. Since synchronizing single items is disabled, you need to synchronize an entire catalog version.
+
+   Classification
+   Classification enables  to define product attributes in a way different to the typing method.
+
+   Classification-based attributes are called category features, sometimes also referred to as classification attributes.
+
+   Through classification, we can flexibly allocate category features that may change frequently.
+
+    Defining and modifying them is easy because they are managed independently of the product type.
+
+   Available category features can be organized independently from product catalog structures in separate classification systems,
+    where they can be structured into classifying categories.
+
+   Using classifying categories, you can assign a category feature to one or multiple product categories used in catalogs.
+   That means that all category features of the classifying categories are available within all products included in the
+   assigned product categories.
+   In addition, each category feature assigned to a category of a catalog structure is inherited by all subcategories.
+
+   Classification helps simplify the management of product data independently of product catalogs or product definitions
+
+   A classification system's independence from product catalogs, combined with the ability to inherit features from higher
+    levels within its classification structure, makes it easy to assign product-related attributes.
+
+   A classification system takes a form similar to that of ordinary product catalogs, that is,
+   a classification system has one or more classification system versions that themselves contain any number of
+   classifying categories organized in a tree-like structure.
+
+    Classification System Version
+    A classification system version can contain any number of classifying categories. The ACTIVE flag on the version makes it
+     possible to define which version's assigned category features are displayed in the product catalog.
+
+    Classifying categories hold the product information. The position of a classifying category within its tree structure
+    indicates the level of detail of product information it has; more general data is provided closer to the root and more detailed
+    data is provided further down the tree.
+
+
+Reference:
+https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b4a208b8669101487c784b5f8557c30.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
