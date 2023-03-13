@@ -1,0 +1,301 @@
+Extensibility of Catalog
+
+    Catalog versions can be synchronized in a one-directional way for updating a catalog version according to another.
+    This way you can transfer catalog content between the catalog versions which represent steps in your catalog maintenance process.
+    We can synchronize catalog versions, even if they are of the same or different catalogs within SAP Commerce.
+
+    The catalog that is online, and therefore visible to customers, is often not the only catalog that your platform contains; usually, we
+    have several non-visible catalogs as well that you can work with. This has the advantage in that you can assemble several catalogs
+    in advance so we can use them when needed, for example, when seasons change and our product portfolio needs to match that.
+
+    From a technical perspective, there is no difference between catalogs or catalog versions. For example, the online catalog is
+    different from the catalog that is hidden only because of access rights.
+
+Working of Synchronization:
+    The single catalog that is visible to your customers is called online, and the catalogs that are not visible to customers are staged.
+     A standard synchronizing operation is the act of updating the online catalog with at least one of the staged catalogs.
+     If you synchronize a staged catalog, the online catalog will then contain all values from that staged catalog.
+
+    A synchronizing operation can be applied to an entire catalog version, but it can also be applied to selected categories or products.
+     Synchronization works in a unidirectional manner only, from staged to online. However, we can apply two synchronizing operations to
+     establish bi-directional update procedures.
+
+    We can also change access rights of the staged catalog to be the online catalog. However, SAP Commerce does not recommend
+    this solution because we will not have a backup of our online catalog. Synchronizing catalogs is easy and can be fully automated.
+
+    Synchronization Statuses
+
+    When we search for items in Backoffice, for example products, they display with a graphic symbol next to each product name.
+     Each such symbol indicates a current product synchronization status.
+
+    Green symbol-Indicates that a source item is synchronized with the target item.
+    Red Symbol- Indicates that a source item has been changed and needs synchronization with the target item.
+    Error like Symbol-Indicates that an initial synchronization is needed. The source catalog version has never been synchronized
+    with the target catalog version. Since synchronizing single items is disabled, you need to synchronize an entire catalog version.
+    Each synchronization execution produces synchronization timestamps. The logic evaluating the Initial synchronization needed
+    status checks to see if any timestamps exist for the source catalog version. In other words, it checks if the catalog has ever
+     been synchronized.
+
+    It is possible to change the logic by introducing the following configuration entry:
+    catalog.synchronization.initialinit.check.timestamps=false
+
+    In this case, the status will be evaluated based on the executions of synchronizations as Cronjobs.
+
+    If we set the catalog.synchronization.initialinit.check.timestamps=false and clear the historical synchronization Cronjob execution
+     items from our system, we will see the  status for your catalog version.
+
+     About Synchronizations
+     A synchronizing operation is held in a synchronization object referencing the source and the target object.
+      Thus, synchronizations are definitions of how products and their data such as names, descriptions, and prices will be
+      copied into the target catalog.
+
+     You can create, edit, and delete a synchronization using Backoffice. Each synchronization is bound to the catalog version
+     that is used as the synchronization source. For more information, see Editing Synchronization Rules.
+
+     To support systems with a large number of products, SAP Commerce supports multithreaded catalog synchronization operations.
+      And Sap commerce is designed to manage deadlocks occuring during synchronization being a highly concurrent process.
+
+     Performing Synchronization
+      Backoffice enables us to:
+
+     edit synchronization rules
+     synchronize complete catalog versions or chosen items
+     check the impact of synchronization
+
+     No Changes in a Synchronized Catalog Version After the Synchronization Was Modified?
+
+     While  experimenting  with synchronizations. If so, we may run into the following situation: we have synchronized a catalog version,
+      modified the synchronizations, and after launching the synchronizations again, the target catalog version is the same as before
+       running the edited synchronizations.
+     For example, the original synchronizations updated the product codes, whereas the new synchronizations updated their prices.
+     However, the target catalog version still only contains the codes. This seems to be a bug, but, in fact, it is not.
+
+     It has to do with the way the catalog selects the products to synchronize. Whether a product is considered to be new and therefore,
+     synchronized or not, depends on the last point of time when the product was changed.
+     The platform itself calls this the modification timestamp.
+
+     Once a product is synchronized with a certain synchronization , that timestamp is stored with that rule. Consequently,
+      the product is considered up-to-date in the target catalog.
+
+     Unless the product's last change date changes, that product will not be synchronized any more with that rule, even if the
+     rule was edited.
+
+     The idea behind this is that the platform can avoid synchronizing up-to-date products, which speeds up the synchronizing
+     operation tremendously. In the case that the synchronization has changed, however, this commonly useful mechanism fails.
+
+     It is technically possible to find out if a synchronization has changed since its last run, but due to all of the checks and
+     database accesses that are necessary, performance would be greatly impacted.
+
+     Configuring Synchronization as CronJobs:
+
+     A CronJob is a task that runs automatically at a certain point of time for a given number of times.
+
+     For example, CronJobs may create backups every day and store them on remote drives on a certain day of the week, or rebuild
+     indexes for the search engine every other day at a certain time.
+
+     Synchronizations are CronJobs as well, so you may have the respective catalog versions being synchronized automatically at a certain time. The idea behind this is that these synchronizations may cause heavy load on your servers and you should run them at times when the system load is usually low, such as early morning or on Sundays. SAP Commerce enables running synchronization processes independently, without a related CronJob. For details on CronJobs, refer to The Cronjob Service.
+
+     
+
+     If you want to try an edited synchronization effect with a previously synchronized product, you need to manually edit
+     that product.
+
+     For example, change the product description, and then save the changed product. The platform will then set the modification
+     timestamp to the current date and synchronize this product again on the synchronization's next run.
+
+     After this edit and change, you can directly re-edit your product to its previous state. For example, add a letter
+      to the description, save it and then remove that letter from the description again and save.
+
+      That way, the timestamp will be updated, while your product stays the same. You might think that simply opening the
+      product's editor and saving it will change the timestamp, but it does not because the system recognizes that the product
+      has not changed. It does not save the product and therefore, the timestamp does not change either.
+
+     Synchronization of Translated Collection Elements:
+
+     A warning message appears if an element cannot be translated, but the synchronization continues. Additionally, there is
+     a new flag to control the default behavior synchronization.allow.partial.collection.translation.
+
+     This property defines what happens with the synchronization of a collection of references if the sync process cannot
+     translate all the references in the source collection.
+
+     synchronization.allow.partial.collection.translation=true (default behavior) means that if the synchronization fails to
+     translate any of the source references, it skips translation of that reference with a warning message and continues translation
+      of the root item. The result is the target collection only contains those target references that were successfully translated.
+
+     synchronization.allow.partial.collection.translation=false means that if the synchronization fails to translate any of the
+     source references, it aborts synchronization of the root item with an error message and any pending changes to the root item
+      are rolled back.
+
+     The partiallyTranslatable in SyncAttributeDescriptorConfig allows you to set up a synchronization job in ImpEx and override
+     the global behavior for a given synchronization job.
+
+     Configuring Synchronization for Catalog Systems
+
+     A catalog system is group of SAP Commerce catalogs connected by synchronizing operations that are realized between the
+      contained catalog versions.
+
+     We organize the involved catalogs in a way to establish a synchronization process from input to output.
+
+     Thus, a catalog system represents a framework for managing multiple output catalogs enabling you to maintain the varying
+     content of several product catalogs.
+
+     In addition, a catalog system can handle multiple input catalogs. Typically, a catalog system is set up around a master catalog
+     holding the leading versions of product data.
+
+     Synchronization with ServiceLayer
+     You can use the ServiceLayer adapter for synchronization jobs. The immediate benefit is that we can use the ServiceLayer
+     infrastructure such as interceptors and validators.
+
+     To enable the ServiceLayer mode, place the following property in your local.properties file:
+     synchronization.legacy.mode=false
+
+     We can also change this dynamically in SAP Commerce Administration Console. Go to the Platform tab -> Configuration.
+
+     Editing Synchronization Rules:
+        Backoffice allows to edit synchronization rules by using synchronization editor.
+
+        The Purpose is:To edit synchronization.
+
+     Procedure
+
+     Log into Backoffice and navigate to System  Multithreaded Synchronization.
+     The result view displays available synchronization jobs.
+
+     Choose the synchronization job you wish to modify to expand a synchronization editor.
+
+     On the CONFIGURATION tab in the editor area, click Edit Configuration button.
+      Browse the tree to expand available properties. Any selected property is updated in the target catalog, and any unselected
+      properties keep their values. This enables us to merge content from several catalog versions into a single one, and split them
+      into individual catalogs again.
+
+     On the ADMINISTRATION tab, set the synchronization rules of how product data is copied to the target catalog version:
+
+     Basic Setting: We can decide whether missing objects in the target catalog version should be created. Furthermore, we can decide
+     that existing products in the target catalog version that do not exist in the source catalog version should be removed.
+     Alternatively, only products that exist in both the source and the target catalog versions are synchronized.
+
+     Language Settings: Define the languages of products attributed to be synchronized.
+     Synchronization User/Groups: Define users and groups that are permitted to initiate such a process although they don't have such
+     write permissions.
+
+     If the option, Respect sync. permissions only is checked, only the defined sync. users are allowed to synchronize. If it is not
+     checked, then a user with granted write permissions for the target catalog version is allowed to do so, too.
+
+     Type Settings: Set the root types that are analyzed in case of complete synchronizations of catalog versions.
+      Such synchronizing procedures searches for new, changed, updated, and removed items of the listed types.
+
+     Checking the Impact of Synchronization
+       The CatalogDiff Function helps to see the difference between Before Synchronization and After Synchronization. Thus function displays
+       the items that needs to be synchronized.
+       A list of differences in items can be generated based on synchronization jobs. The Synchronization Job Configuration determines the
+       items that are going to be synchronized.
+
+       To display a list of differences between catalog versions, log in to Backoffice and follow these steps:
+
+       Procedure:
+        In the Backoffice navigation tree, click Catalog  Catalog Versions.
+        A tab with a list of available catalog versions shows up.
+
+        Click a catalog version.
+        In our case, it is the Staged version.
+
+        Information about the catalog version displays, with action icons available for that catalog version, including the
+        Catalog Version Diff action icon.
+
+        Click the Catalog Version Diff icon.
+        The Catalog Version Diff window opens.
+
+        Notice that for the Staged catalog version, a synchronization job is already chosen. It is Sync Default:Staged -> Default:Online.
+
+        Optional: Choose a particular synchronization job.
+        Click Generate.
+        A list displays with items that haven't been synchronized.
+
+       Synchronizing Catalog Versions in Backoffice:
+
+        Backoffice allows to synchronize the entire catalog version. It can be done by using Catalog Synchronization action.
+
+        Procedure
+        In the Backoffice navigation tree, click Catalog  Catalog Versions.
+        A tab with a list of available catalog versions shows up.
+
+        Click the source version of the catalog you want to synchronize.
+        In our case, it is the Staged version of default catalog.
+
+        A tab shows up with information about the catalog as well as available action icons, including the Catalog synchronization icon.
+
+        Click the Catalog synchronization icon.
+        The Catalog synchronization wizard opens up.
+
+        In the Sync job selection tab of the wizard, choose a synchronization job .
+        In our case, it is Sync Default:Staged -> Default:Online.
+
+        Click Next to move to the Advanced configuration tab and adjust your configuration if required.
+        We don't change anything at this step.
+
+        Click Start in the Advanced configuration tab to perform the synchronization.
+        Synchronization results display when the process has finished.
+
+        Click Done to close the wizard window.
+
+        Synchronizing Items:
+            Backoffice Allows us to synchronise selected Items.It can be done using Synchronization ACtion Icon.
+          Procedure
+          In the Backoffice navigation tree, click Catalog  Products.
+          A tab with a list of available products shows up.
+          Choose the products you want to synchronize.
+          In our case, they are product001 and product002.
+          A tab shows up with information about the product as well as available action icons, including the Synchronize Action icon.
+          Click the Synchronize Action icon.
+          The Synchronize Action wizard opens up.
+
+          In the Synchronize Action wizard, choose a synchronization job and click SYNC.
+          In our case, it is Sync Default:Staged -> Default:Online.
+
+          Dependent Synchronization:
+            It avoids creation of cross references between items from staged version to online version from different catalogs.
+            Overview of Dependent Synchronization:
+
+            It is recommended to use dependent synchronization in the following situations:
+
+            You have multiple catalogs with Staged and Online catalog versions
+            These catalogs have items that refer to each other
+            These catalogs have synchronization jobs to synchronize their catalog versions
+
+            Example:
+                There is a category called Category1 and a Product called Product 1.Category1 refers to Product1.If synchronization is
+                done without DependentSynchronization,category 1 refers to Product1 Before and After Synchronization and Product1 refers to
+                category1 Before and After Synchronization resulting in cross reference.
+
+                But in Dependency Synchronization,Category1 staged content is copied to Category1 online content and As Category1 has reference
+                 to Product,From Product it is checked that it contains any dependency or it depends on any synchronization job from
+                 ProductCatalog and the dependency is configured. As the synchronization job is not trigerred from Product Catalog,
+                 cross link is not created.
+                 The same process is done in Copying content from Product Staged to Product Online.BUt the dependency is checked
+                  from Category1.
+                 The dependency is configured, the Categories Catalog Online Version is checked for the online version of Category1. As the
+                  Categories Catalog Synchronization has already been triggered, the online version of Category1 exists. The reference
+                   between online version of the items from different catalogs is created.
+                 After both synchronization jobs are finished, items from online versions of catalogs hold only the references to each other.
+                 The situation would look exactly the same if synchronization jobs ran in a different order
+    Reference:
+    https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b74cb8186691014a19de16c7b468699.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

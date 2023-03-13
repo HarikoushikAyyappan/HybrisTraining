@@ -1,0 +1,142 @@
+24/02/23
+
+Facets:
+
+ Facet Search also referred as Faceted search or faceted filtering is a navigation technique for accessing a collection of available
+ information by narrowing down long list of objects to a manageable size.
+
+ Facets are build from with a logic based on search results (based on category).
+
+ On left side , filters like gender , size , Prices , these are called as Facets
+
+ We need to include solrfacetsearch and solrserver extension in localextenions.xml
+
+ Likewise hybris comes up pluggedin with tomcat server.In the similar way , hybris comes with inbuild plugged in Solrserver
+  (present in solrserver extension)
+ If we have multiple filters inside a facet than that facet is called as Multi value facets (generally checkboxes).
+  Single value facets are generally links.
+
+ We have options of Sorting. This is also configured in Solr.
+
+ Pagination can also be  configured in Solr.
+
+ There are two things that we can customize inside solrserver extension,
+
+Stopwords : slang language. We can specify words for which we do not need search results.Eg. Amazon website will have Flipkart as stopword.
+
+Synonym : We can provide same search result for two different things.for eg : someone searching for Pants & if  someone search for
+ trousers which are actually same thing.
+
+ Example:
+
+ Requirement: We have to do solr search based on Good quality product,Bad quality product and worst quality product.
+
+ In this case ,we are creating a new attribute say ProductHealthCondition in ootb itemType ApparelProduct.We add values to the attribute using
+ impex.
+
+ Then We have to create impex for SolrIndexed Property and SolrSearchQueryProperty.
+
+ A product could be searched through various parameters namely id,name etc. we have to index the product such that it could be searched using
+ many paramaters.We will be providing those details in SolrIndexedProperty.
+
+ And we have to mention where a keyword should be searched when a user enters that keyword.ie) when a user enters a keyword,we can specify which are
+ the attributes the keyword has to searched in order to match.Eg.If Jeans keyword is searched,it can be searched in catalogId,catagoryName.
+ manufacturerName,productName etc. These has to be mentioned in SolrSearchQueryProperty.
+
+ SolrIndexedProperty and SolrSearchQueryProperty are found in solr.impex.
+
+ While Indexing if we give fullIndex option,solr core works in two phases.It creates a backup of existing data in one core. After Indexing,
+  it swaps the data.WHile Full indexing,the entire document is deleted and created again.It takes mre time.
+
+  While Update indexing,the thing which is modified is updated.It can be done frequently as it takes less time.
+
+  Indexing can be done using Backoffice and Cronjobs .We can also schedule indexing in Cronjobs.
+
+  In backoffice,when we enter into SolrFacetConfiguration.We will get options to see the indexed properties in Indexed properties tab
+  and we can select whether to use full,update or delete and we can start the indexing and we have options to give synonyms in backoffice.
+
+Field Value Provider:
+
+ Field Value Provider is used to provide a complex logic based on which it provides a value.
+
+ Eg.If we want to display a particular product is available for a time period ,we can use Value Provider to do so.
+
+ Requirement:
+ Display the number of days product will be available online from current date in the product search box and search result.
+
+ We have an attribute called offlineDate defined inside the Product model already which specifies when the product will go offline
+ from the site
+
+ So for this we need to write some logic like offlineDate – currentDate and get this data when we search the product.
+
+ But this data is not available in DB directly, we need to write a custom logic to get this data and then we can send it to Solr for indexing.
+ So for this, we need to write ValueProvider.
+
+The steps to do valueProvider is,
+
+1.We need to create a new class for Value provider with the logic for displaying the thing we need to do.
+
+2.We must make the  value provider class as a spring bean
+
+3.Add new attribute onlineDays inside solr.impex file as indexed property  Also specify the value provider
+  for the same as below
+  \hybris\bin\ext-data\apparelstore\resources\apparelstore\import\coredata\stores\apparel-uk\solr.impex
+
+ Here we have specified the indexed property name as onlineDays and the value provider as productOnlineDaysValueProvider
+ So this value provider productOnlineDaysValueProvider should be same as spring bean id of the value provider defined in the
+ trainingcore-spring.xml file.
+
+ 4.Add new attribute onlineDays inside ProductData.We need to add below line in ProductData bean definitions
+    hybris\bin\custom\training\trainingfacades\resources\trainingfacades-beans.xml
+
+   Do ant all to get this attribute generated in the ProductData class
+
+ 5.Populate new attribute from solr result to ProductData
+   Create a new class by extending SearchResultProductPopulator and Override the populate() method to set this new attribute
+   in the ProductData
+
+  We need to add below lines
+   //Adding online days to product data
+   target.setOnlineDays(this.<Integer> getValue(source, "onlineDays").intValue());
+
+
+   getValue() method takes 2 parameters
+   1)SearchResultValueData : Search result obtained from Solr
+   2)String: property name specified in solr.impex file
+
+6.Define the above populator as a spring bean and link it to the existing populator using alias.
+
+  Add bean definition in trainingfacades-spring.xml as below
+
+  hybris\bin\custom\training\trainingfacades\resources\trainingfacades-spring.xml
+
+7.Modify the autocomplete.js file to include this new value as part of search box suggestion result.
+  hybris\bin\custom\training\trainingstorefront\web\webroot\_ui\desktop\common\js\acc.autocomplete.js
+
+  renderHtml +=   "<span class='title'>" + "Online Days " +item.onlineDays +"</span>";
+  Add above line just below the line renderHtml +=”“;
+  onlineDays:obj.onlineDays
+  Add above line just below the line
+  image: (obj.images!=null && self.options.displayProductImages) ? obj.images[0].url : null
+
+
+8.  Import solr.impex file
+  Import the solr.impex file either manually through HAC or update the system to get it imported automatically
+
+9.Update products with online and offline dates in HMC
+
+10.Perform full indexing through HMC by selecting apparel-uk solr config.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
