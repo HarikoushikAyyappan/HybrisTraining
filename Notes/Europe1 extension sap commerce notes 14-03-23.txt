@@ -1,0 +1,79 @@
+14/03/23
+
+Pricing:
+ Europe1 Extension:
+   Europe1 Extension is the pricing system of sap commerce and is the default price factory.
+   Along with storing and retrieving process information it also does process related to tax,discounts and helps arriving final price.
+   In the complete business lifecycle,we will be doing lot of pricing strategies to encourage the customer to buy products.
+   Using Europe1 Extension,we can frame our own strategy in pricing and faciliate processin managing the orders.
+
+   The following functions can be done using Europe1 Extension:
+    We can store ,retrieve and match prices,tax,discounts to products and customers.
+    It provides functionalities related to prices,tax and discounts more flexibly such as,
+
+     per line item-the base price is provided along with taxes and discounts even multiple taxes/discounts.
+     per order-global discounts are also  possible(even multiple ones) for the order subtotal.
+     Multiple units-products can be sold in different packaging units .eg. 10 packs of glasses with 10 glass in each pack,10 glasses.
+     Scale Prices-we may wish to reduce the price of a particular product say glass if it is ordered in bulk quantity beyong a threshold value.
+     Date ranges: we may wish to offer any discount on a paricular time period or on a particular day.
+     Grouping a customer/product-we may wish to provide discount a customer with whom we may have negotiated so when the particular customer is
+       logged in the price will show the discounted price.And we can create price categories and show discounted price for the products
+       belonging to the particular category instead of adding discounted prices to individual products.
+     Net/Gross prices-We can store  net/gross prices separately but if only either of rate is available we can convert the prices on the fly
+        if the order requires so.
+
+
+    The Europe1 Price factory makes only the pricing part of ordering process. But the Ordering process is part of sap commerce's core
+    and it is not integrated with Europe1 Price Factory. Within Ordering Process,Europe1 Price factory matches the Prices,tax and discounts.
+
+    The sap commerce extension may provide some functionality that is licensed by different sap commerce modules.so we must confirm with the
+    functionalities specified in contract license and stick on to that.In case of doubt we have to contact sales representative.
+
+
+Price, Tax, and Discount Calculation:
+  Sap commerce stores all possible prices of products as price objects. These price objects represents a certain price constellation which is optionally
+  related to date range,customer,products,a group of customer or a group of products.
+  Every PriceRow object is a potential price.When a price is required for an order,the Europe1 Price Factory retrieves all the price objects
+   related to the combination of customers and products because unless an order is placed ,number of products is not determined and
+   the scale prices may apply.
+  Whenever an order is placed ,the Europe1 Price Factory retrieves all the price objects related to the customers and products and chooses
+  the best matching priceRow.
+  To handle a request for the price of a product,the Europe1 PriceFactory retrieves all the priceRow Objects related to customer and products
+  The remaining subset of priceRows are converted so that they are comparable.The converted priceRows are sorted by relevance to the
+   customer and products.The bast matching combination is taken as result and returned as final price.
+   Attributes of a PriceRow:
+     The following  provides an overview of the attributes of a PriceRow object.
+      1.channel whose type is PriceRowChannel is not mandatory .It specifies the channel(eg.mobile,desktop etc) for which the price
+      is effective.
+      2.currency whose type is Currency is mandatory.It specifies the currency of a price.
+      3.dateRange whose type is StandardDateRange is not mandatory which specifies the timperiod of validity for priceRowObject.
+      4.giveAwayPrice whose type is java.lang.Boolean is  mandatory.
+      5.endTime whose type is java.util.date is not mandatory.
+      6.matchValue whose type is java.lang.Integer is not mandatory.
+      7.minqtd whose type is java.lang.Long is mandatory which specifies the scale price definition.ie)the price is applicable beyond a threshold
+      quantity.Default value is 1.
+      8.net whose type is java.lang.Boolean is not mandatory which specifies whether the price is netprice or gross price.The default value is
+       gross price.
+       9.pg whose type is ProductPriceGroup is not mandatory which specifies the productPriceList for which the price is effective.The Price
+         is applied to all the members of this ProductPriceList.
+      10.price whose type is java.lang.Double is mandatory which specifies the price to be set.
+      11.product whose type is Product is not mandatory which specifies the Product for which the Price is to bet.
+      12.productMatchQualifier whose type is java.lang.Long is not a mandatory attribute.
+      13.startTime whose type is java.util.date is not a mandatory attribute.
+      14.ug whose type is UserPriceGroup is not a mandatory which specifies the CustomerPriceList for which the price is to be set.
+      15.unit whose type is Unit ,is mandatory which specifies the unit the price is measured in.
+      16.unitFactor whose type is java.lang.Integer is mandatory which specifies the number of units the price refers to.eg.if we set the price
+      to 50 and unitFactor to 5 then,individual units are 10.
+      17.user whose type is User is not mandatory which specifies the user for whom the price is to be set.
+      18.userMatchQualifier whose type is java.lang.long is not mandatory.
+
+
+
+
+
+Reference:
+https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8bbb40fc86691014bd39c6f327b993a1.html?q=price
+https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8bbb162786691014b77c9c31c0aa6b72.html?q=price
+
+
+
