@@ -1,0 +1,277 @@
+08/03/23
+
+Synchronizing Catalogs (Continuation of 07/03/23) :
+    To set a dependency, we need to use one of these attributes: dependsOnSyncJob and dependentSyncJob. From the code perspective it
+    does not matter which attribute is used because they use many-to-many relations, so dependency works in the same way.
+
+    Configure CatalogVersionSyncJobs with Dependency
+    Create synchronization jobs. Creates synchronization jobs for the given catalogs from the staged catalog version to the
+    online catalog version.
+        final CatalogVersionSyncJob category_job = createSyncJob("categoryCatalog", "category_staged", "category_online");
+        final CatalogVersionSyncJob product_job = createSyncJob("productCatalog", "product_staged", "product_online");
+    Set a dependency. Make sure that a rerun of the synchronization always uses a new cron job.
+    Every execution of the CatalogVersionSyncJob requires a new cron job.
+        //Method that creates for a given synchronization job a new CronJob and configures it automatically
+        private CatalogVersionSyncCronJob createFullSyncCronJob(final CatalogVersionSyncJob job)
+        {
+          final CatalogVersionSyncCronJob cj = (CatalogVersionSyncCronJob) job.newExecution();
+          job.configureFullVersionSync(cj);
+          return cj;
+        }
+
+        //Now you get your CronJobs for the given jobs
+        CatalogVersionSyncCronJob category_cj = createFullSyncCronJob(category_job);
+        CatalogVersionSyncCronJob product_cj = createFullSyncCronJob(product_job);
+
+        //Set the dependencies between jobs
+        final Set<CatalogVersionSyncJob> dependantJobSet = new HashSet<CatalogVersionSyncJob>();
+        dependantJobSet.add(product_job);
+
+        category_job.setDependentSyncJobs(dependantJobSet);
+        //Alternative use: product_job.setDependsOnSyncJob(dependantJobSet);
+    Execute cron jobs asynchronously.
+        category_job.perform(category_cj, false);
+        product_job.perform(product_cj, false);
+
+      It is worth noting that after the execution of cron jobs, synchronization jobs of one or both cron jobs may still be running
+      or has not even started yet. Therefore, we need to check if they have finished. See details in Waiting for Synchronization Jobs
+      section.
+
+Checking Results of Synchronization and Rerun
+    It is possible that one of dependent synchronization jobs ends with an error. This is normal, because one job relies on
+    an item which is created by the other job. If this item is not there, this job reports an error. In the second run, this job will
+    be successfully finished, because the item exists. Therefore, after both synchronizations are finished, check the result and do
+     another rerun if needed.
+        EnumerationValue fail = category_cj.getFailureResult();
+        if (category_cj.getResult().equals(fail ) || product_cj.getResult().equals(fail) ) //one of them failed, does not matter which one, just rerun both.
+        {
+          //You need to create a new CronJob for the rerun
+          CatalogVersionSyncCronJob category_cj = createFullSyncCronJob(category_job);
+          CatalogVersionSyncCronJob product_cj = createFullSyncCronJob(product_job);
+
+          //Execute them asynchronously
+          category_job.perform(category_cj, false);
+          product_job.perform(product_cj, false);
+        }
+         If, after the second run, the synchronization job still finishes with an error, then it is a real error and it should be investigated.
+
+Waiting for Synchronization Jobs:
+    The waiting is divided into two parts:
+        Waiting if both synchronization jobs started in a given timeout
+        Waiting if both synchronization jobs finished in a given timeout
+            private void checkExecutionOfAsynchronousJobs(final long startTimeOutInMilis, final long executionTimeOutInMilis, final CatalogVersionSyncCronJob... cronjobs) throws InterruptedException
+            {
+              assertAllStarted(startTimeOutInMilis, cronjobs);
+              assertAllFinished(executionTimeOutInMilis, cronjobs);
+            }
+    Set waiting if both synchronization jobs started in a given timeout
+        private void assertAllStarted(final long startTimeOutInMilis, final CatalogVersionSyncCronJob... cronjobs)
+        			throws InterruptedException
+        {
+          final long timeoutTime = System.currentTimeMillis() + startTimeOutInMilis;
+          //check if the cronjob had started
+          while (!allStartedOrFinished(cronjobs) && System.currentTimeMillis() < timeoutTime)
+          {
+            Thread.sleep(500);
+          }
+          if(!allStartedOrFinished(cronjobs)) throw new RuntimeException("At least one of the given Jobs was not started in the given time");
+
+        }
+
+        private boolean allStartedOrFinished(final CatalogVersionSyncCronJob... cronjobs)
+        {
+          for (final CatalogVersionSyncCronJob cronjob : cronjobs)
+          {
+            if (!(cronjob.isRunning() || cronjob.isFinished()))
+            {
+               return false;
+            }
+          }
+          return true;
+        }
+    Set waiting if both synchronization jobs started in a given timeout
+        private void assertAllStarted(final long startTimeOutInMilis, final CatalogVersionSyncCronJob... cronjobs)
+        			throws InterruptedException
+        {
+          final long timeoutTime = System.currentTimeMillis() + startTimeOutInMilis;
+          //check if the cronjob had started
+          while (!allStartedOrFinished(cronjobs) && System.currentTimeMillis() < timeoutTime)
+          {
+            Thread.sleep(500);
+          }
+          if(!allStartedOrFinished(cronjobs)) throw new RuntimeException("At least one of the given Jobs was not started in the given time");
+
+        }
+
+        private boolean allStartedOrFinished(final CatalogVersionSyncCronJob... cronjobs)
+        {
+          for (final CatalogVersionSyncCronJob cronjob : cronjobs)
+          {
+            if (!(cronjob.isRunning() || cronjob.isFinished()))
+            {
+               return false;
+            }
+          }
+          return true;
+        }
+    Set waiting if both synchronization jobs finished in a given timeout
+        private void assertAllFinished(final long endTimeOutInMilis, final CatalogVersionSyncCronJob... cronjobs) throws InterruptedException
+        {
+          final long timeoutTime = System.currentTimeMillis() + endTimeOutInMilis;
+          //check if the cronjob had started
+          while (!areAllOfThemFinished(cronjobs) && System.currentTimeMillis() < timeoutTime)
+          {
+            Thread.sleep(500);
+          }
+          if(!areAllOfThemFinished(cronjobs)) throw new RuntimeException("At least one of the Jobs didn't finished in the given timeout");
+        }
+
+        private boolean areAllOfThemFinished(final CatalogVersionSyncCronJob... cronjobs)
+        {
+          for (final CatalogVersionSyncCronJob cronjob : cronjobs)
+          {
+            if (!cronjob.isFinished())
+            {
+          	return false;
+            }
+          }
+          return true;
+        }
+    To wait for the above synchronization jobs, they need to be executed in the following manner
+        //Execute them asynchronously
+        category_job.perform(category_cj, false);
+        product_job.perform(product_cj, false);
+        checkExecutionOfAsynchronousJobs(2000, 5000, category_job, product_job); //waiting at least 2 seconds for start-up and wait at
+        least 5 seconds to give them time for finishing
+    Running CatalogVersionSyncJobs Synchronously
+    If synchronization jobs are started asynchronously, this means that both jobs run in the same thread, one after one.
+
+    To run jobs synchronously do the following:
+        category_job.perform(category_cj, true); //code execution stops here for some seconds till job is finished
+        product_job.perform(product_cj, true); //code execution stops here for some seconds till job is finished
+
+        //here, the jobs could still have an error result, so another single rerun is necessary
+        //But we do not need to poll the jobs if they are already finished or not.
+
+Performing Multithreaded Catalog Synchronization in Backoffice:
+    To support systems with large numbers of products in a multi-catalog scenario, SAP Commerce offers multithreaded catalog
+    synchronization. You can perform it in Backoffice.
+    Multithreaded catalog synchronization enables to use as many cores as you like to speed up catalog synchronization operations.
+    We can configure the number of cores for each synchronization job separately. Our tests on 16 core machines have demonstrated an
+     almost linear scaling if the database can handle the load. Follow the steps to configure the multithreaded synchronization.
+    Procedure
+    To run a multithreaded catalog synchronization, log into Backoffice and navigate to System  Multithreaded Synchronization.
+    Use the + button to add a new synchronization configuration.
+    Configure the multithreaded synchronization as regular synchronizations.
+    Once the configuration is ready, navigate to Administration -> Unbound to adjust the advanced settings
+    For synchronization, we can set the following:
+    Cache size in entries: Keep the default.
+    Usage of transactions: By default set to false.
+    Number of scheduler threads: How many threads are used for the scheduling if the medias. Factory default is 1, meaning no multithreading.
+    The Number of used threads: Enter the number of the used threads. Factory default is 1, meaning no multithreading.
+    Save and execute the synchronization as usual.
+
+Synchronization of Custom Item Types:
+    SAP Commerce allows  to synchronize catalog versions into another catalog version by defining synchronizations.
+  Item Type Requirements:
+        Item types which should be included in the synchronizing process need to meet some basic requirements before it is possible to add
+        them to a synchronization item.
+
+        The required settings can be done either manually in Backoffice or declared inside the items.xml file
+
+    Catalog Version Home Attribute:
+
+        First of all, item types must provide a catalog version home attribute typed to CatalogVersion. This way, each item of
+        this type knows where it belongs to. This attribute should be initial, mandatory, and read-only if possible.
+
+    Presence of a Unique Key Attribute
+        An item must have one or more unique key attributes. A synchronizing capable item has to be distinguishable within its
+         enclosing catalog version. For example, for the type Unit the unique key attribute is code.
+
+    Setting CatalogVersion as the Home Attribute for a Type:
+        In our example, we set CatalogVersion as a home attribute for the Unit type. If possible, the attribute must be set to initial,
+         mandatory, or read-only.
+
+        Once we followed the steps, we will end up with the following configuration:
+            <attribute qualifier="catalogVersion" type="CatalogVersion">
+               <modifiers read="true" write="false" search="true" initial="true" optional="false"/>
+               <persistence type="property"/>
+            </attribute>
+        Procedure
+        In the Backoffice tree, go toSystem  Types and select a type, for example Unit.
+        On the Properties tab, click Create new Attribute
+        Choose CatalogVersion as Feature type and edit a Qualifier by entering for example catalogVersion.
+        Save and the attribute is listed as property of the type.
+
+Marking a Type as Synchronizing Capable:
+    we can do it manually in Backoffice or this can be declared inside the items.xml file.
+
+    Procedure
+    In Backoffice go to the Extended tab of the type editor.
+    In the Catalog group, set the Is repository capable to True.
+    In the Repository attribute drop-down list box, select the catalog version home attribute, for example catalogVersion.
+    To theRepository unique key attributes list, add the qualifier code of the attribute, for example code for Unit
+
+    Alternatively, this can also be done by editing the items.xml model file. The following example refers to the default catalog item
+    Keyword. It shows the shortened Keyword item type declaration, which illustrates how to use the <custom-properties> tag
+     to mark the type, define the catalog version, and unique key attributes:
+       <itemtype code="Keyword" ...>
+          <custom-properties>
+             <!-- marking the type as synchronizing capable here: -->
+             <property name="catalogItemType">
+                <value>java.lang.Boolean.TRUE</value>
+             </property>
+
+             <!-- define catalog version attribute here: -->
+             <property name="catalogVersionAttributeQualifier">
+                <value>"catalogVersion"</value>
+             </property>
+
+             <!-- define unique key attributes here; separate multiple attribute qualifiers by commas: -->
+             <property name="uniqueKeyAttributeQualifier">
+                <value>"keyword"</value>
+             </property>
+          </custom-properties>
+          <attributes>
+             <attribute qualifier="keyword" type="java.lang.String">
+                <modifiers read="true" write="true" search="true" optional="false"/>
+                <persistence type="property"/>
+             </attribute>
+             ...
+             <attribute qualifier="catalogVersion" type="CatalogVersion">
+                <modifiers read="true" write="true" search="true" optional="false"/>
+                <persistence type="property"/>
+             </attribute>
+          </attributes>
+          ...
+       </itemtype>
+
+  Synchronization Strategies:
+
+    Once our item type has been marked as synchronizable, it will be automatically recognized as such by any synchronizing operation
+    without a need to configure anything else.
+    This means that source version items of this type are translated into their existing target version counterpart items.
+
+    This is not enough at all times,an item is not automatically synchronized unless it is part of another item which is copied to
+    target version.
+    There are two ways to do this,
+     Creating part of mechanism to create/copy the items with enclosing/referenced item.
+     making the item as a root of synchronization,to create/copy the items to target version without enclosing or referenced item.
+  Reference:
+  https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b74cb8186691014a19de16c7b468699.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

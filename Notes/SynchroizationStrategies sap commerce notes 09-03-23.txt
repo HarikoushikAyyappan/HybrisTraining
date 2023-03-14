@@ -1,0 +1,320 @@
+09/03/23
+
+Synchronization Strategies:
+    Once our itemtypes are marked synchronizable,it is not necessary to configure anything else.
+    But it will not automaically created/copied in target version unless We use Part of mechanism or making the item as roottype of synchronization.
+
+    Each occurence of an itemtype inside attribute of synchronized itemtype(like Product.) must be marked as a part of synchronization .
+
+    Procedure
+   1. Log into Backoffice and navigate to System -> Multithreaded Synchronization.
+    The result view displays available synchronization jobs.
+
+   2.  Choose the synchronization job you wish to modify to expand a synchronization editor.
+
+   3.On the CONFIGURATION tab in the editor area, click Edit Configuration button
+   4.Expand the tree to find all attributes containing our item type. You can also use the search field to find a specific attribute.
+   5.Enable Copy by value.
+     Because these settings cannot be declared inside items.xml, you should put some code inside the createEssentialData method of your extension manager,
+      which performs these changes.
+        public void createEssentialData(Map params, JspContext jspc) throws Exception
+        {
+           ...
+
+           CatalogManager cm = CatalogManager.getInstance();
+
+           // get source and target version of synchronization
+           CatalogVersion src = cm.getCatalog( "hwcatalog" ).getCatalogVersion( "staged" );
+           CatalogVersion tgt = cm.getCatalog( "hwcatalog" ).getCatalogVersion( "online" );
+
+           // find rule by source and target (provided there is just one!)
+           SyncItemJob syncJob = cm.getSyncJob( src, tgt );
+
+           // get attribute which should be treated as part-of
+           AttributeDescriptor ad = TypeManager.getInstance().getComposedType(
+              Product.class
+           ).getDeclaredAttributeDescriptor( "keywords" );
+
+           // get or create attribute synchronization config item
+           SyncAttributeDescriptorConfig cfg = syncJob.getConfigFor(
+              ad,
+              true /* create on demand */
+           );
+
+           // set part-of behavior to true
+           cfg.setCopyByValue( true );
+
+           ...
+
+        }
+  Synchronizing as Root Type:
+    If our item type is standalone or it has no other connection with other synchronized item types, it can be made as the root type of
+    synchronization without tweaking other attributes.
+
+    All items of synchronization item types are evaluated at the begininng of synchronization and the synchronization starts if,
+      No Counterpart items exists in target version,unless this has been disabled.
+      The source item modification timestamp is newer than last synchronization time.
+      An item exist with a target version is no longer present in source catalog version(by default this is disabled).
+
+    We can add new item types in synchronization rootypes in multithreaded synchronizqtion in backoffice
+       Procedure
+       1.Navigate to System  Multithreaded Synchronization.
+       2.Select the synchronization from the list.
+       3.Go to Administration -> Unbound
+       4.Add the new type to the Root types list.
+       5.Of course this may also be put in code, preferably inside the createEssentialData method of your extension manager.
+          public void createEssentialData(Map params, JspContext jspc) throws Exception
+          {
+             ...
+
+             CatalogManager cm = CatalogManager.getInstance();
+
+             // find source and target version
+             CatalogVersion src = cm.getCatalog( "hwcatalog" ).getCatalogVersion( "staged" );
+             CatalogVersion tgt = cm.getCatalog( "hwcatalog" ).getCatalogVersion( "online" );
+
+             // find synchronization by source and target version
+             SyncItemJob syncJob = cm.getSyncJob( src, tgt );
+
+             // get modifieable list of root types
+             List<ComposedType> rootTypes = new ArrayList<ComposedType>( syncJob.getRootTypes() );
+
+             // insert our type at first position
+             rootTypes.add(
+                0,
+                TypeManager.getInstance().getComposedType( "Keyword" )
+             );
+
+             // dont forget to save them again
+             syncJob.setRootTypes( rootTypes );
+
+             ...
+          }
+
+ Synchronizing a Single Item
+ Apart from synchronizing the entire catalog, you can also choose to synchronize single items.
+
+ It is always possible to trigger synchronizations for single items if:
+
+ A synchronization exists for the selected item's catalog version.
+ The current user has got the permission to change the target catalog version
+
+ TroubleShooting:
+    Though it is easy to include own item types in synchronization following are the steps to check when any issue occurs,
+        1.Dependencies:The real life time dependencies must be obeyed when configuring synchronisation roottypes(ie) Order and OrderEntry)
+        ie) The Parent item type must be placed before its part of item type.
+        2.Unique key behavior differences:Some unique key constraints will be put down  into code(eg.Language.isocode).no matter what we try
+         to configure in composed item type,synchronization checks configured constraints and item typecreation will throw errors.
+        3.Cyclic part-of configuration:Synchronizatio fails when a part of item copies its parent also to copy as part of too.It creates confusion
+         when configuring that is real or configured part of attributes.
+        4.Root type list contains super and subtypes: Make sure each new synchronization root type is not subtype of
+        any existing root type; otherwise synchronization will at least perform slow or may fail completely.
+        5.Modification time issues:
+          We have to mark the part of item as marked manually or else changing part of item will show its owning type as modified.
+          The Relation attributes and plain property attributes make the enclosing ite type as modified.
+          Since there is one modification time for an item type,the synchronization operation notice only the change but not the exact attributes.
+          so if synchronization omits several attributes also,a modified item will be synchronized regardless of knowing which attributes are
+          changed actually.
+
+        Root types affect full synchronization only: When triggering synchronization for single items (via search result and so on)
+        the synchronizing operation will publish these items only.
+        All synchronization attribute settings are obeyed here as well.
+  Catalog Synchronization API:
+    We can start catalog synchronization processes and get their status via API.
+    The actual setup of a CatalogSyncJob is not in scope here.
+   Starting Full Catalog Synchronization:
+        CatalogSynchronizationService offers multiple methods for starting the synchronization process.
+        Ad-Hoc Full Synchronization:
+         It is used when there are no existing CatalagVersionSyncJob items present for given pair of catalog versions.There are several methods we can use to create and start
+         syncjobs adhoc.
+          CatalogSynchronizationService css = ...
+          CatalogVersionModel source = ...
+          CatalogVersionModel target = ...
+
+          // create a job and a cron job and execute synchronously using the default amount of worker threads
+          css.synchronizeFully( source, target )
+
+          // create a job and a cron job and execute synchronously using 16 worker threads
+          css.synchronizeFully( source, target, 16 )
+
+          // create a job and a cron job and execute in background using the default amount of worker threads
+          css.synchronizeFullyInBackground(source, target)
+
+    This is recommended for testing only as sync jobs are heavy weight and shouldn't be created more than once per catalog version pair.
+
+ Full Synchronization for an Existing Sync Job:
+  Full Synchronization for an Existing Sync Job
+  The regular use case of starting synchronization is based on an existing CatalogVersionSyncJob,
+  containing all relevant settings (for example number of workers, root types, attributes).
+  We can pass additional settings via a SyncConfig parameter:
+    CatalogSynchronizationService css = ...
+    CatalogVersionSyncJobModel syncJob = ...
+
+    // configuring
+    SyncConfig cfg = new SyncConfig();
+    cfg.setSynchronous( false ); // background
+    cfg.setForceUpdate( true ); // update all even if timestamps are the same
+
+    css.synchronize( syncJob, cfg );
+
+ Starting Partial Synchronization:
+  Simplified Partial Synchronization API:
+
+  The service offers methods for use cases where only a subset of source catalog items is supposed to be processed:
+     CatalogSynchronizationService css = ...
+     CatalogVersionSyncJobModel syncJob = ...
+     SyncConfig cfg = ...
+
+     // start partial sync for given items and specific job
+     List<ItemModel> itemsToSync = ...
+     css.performSynchronization( itemsToSync, syncJob, cfg );
+
+     // start multiple partial sync processes for given items from multiple catalog
+     List<ItemModel> itemsFromMultipleCatalogs = ...
+     List<CatalogVersionSyncJobModel> multipleSyncJobs = ...
+     css.performSynchronization( itemsFromMultipleCatalogs, multipleSyncJobs, cfg );
+
+   Filtering of Items:
+     The items are always checked that it match the specified sync jobs .The items that do not match with the source or
+     target catalog versions are silently ignored.If there are multiple sync jobs,the item is accepted by only one job.
+
+   Scheduling Removal:
+      In case of items removed from the source version,schedule the target version counterparts inorder to correctly remove the items
+      correctly.As it is already specified as target version,we can simply add them to the itemlist.
+
+  Partial Synchronization via SyncConfig API:
+    Partial synchronization can also be started using SyncConfig:
+      CatalogSynchronizationService css = ...
+      CatalogVersionSyncJobModel syncJob = ...
+
+      List<ItemModel> sourceItemsToSync = ...
+      List<ItemModel> targetItemsToRemove = ...
+
+      SyncConfig cfg = new SyncConfig();
+      cfg.setSynchronous( false ); // background
+
+      // add source items for insert or update
+      for( ItemModel item : sourceItemsToSync )
+      {
+         cfg.addItemToSync( item.getPk() );
+      }
+      // add (orphan) target items for removal
+      for( ItemModel item : targetItemsToRemove )
+      {
+         cfg.addItemToDelete( item.getPk() );
+      }
+
+      // start it
+      css.synchronize( syncJob, cfg );
+
+  Getting Process Information
+  Most methods actually return SyncResult objects, which allows us  to inspect the status of a started sync process:
+    CatalogSynchronizationService css = ...
+    CatalogVersionSyncJobModel syncJob = ...
+    SyncConfig cfg = ...
+
+    // start it
+    SyncResult sr = css.synchronize( syncJob, cfg );
+
+    // get sync cron job
+    CatalogVersionSyncCronJob syncCronJob = sr.getCronJob();
+
+    // if started synchronous: check result
+    if( sr.isFinished() && sr.isSuccessful() )
+    {
+       // great
+    }
+
+    // if started in background: poll for status - note that models need to be refreshed to reflect changes from other threads or even other server nodes!
+    ModelService modelService = ...
+
+    CatalogVersionSyncCronJob syncCronJob = sr.getCronJob();
+    while( !sr.isFinished() )
+    {
+       Thread.sleep( 1000 );
+       modelService.refresh( cronJob() );
+    }
+ Catalog Item Synchronization Status API:
+   We can find the status of synchronization for epcific items contained within catalog versions
+   CatalogVersoinSyncJob specifies a pair of catalog items as source and target items and we can check the status only if the items are
+   present in either.
+   Such a sync job defines a list of Composed types(ie)root types) that determine which type of catalog version items are synchronized because
+   of this syncJob.So the root types of a particulr sync job can have status
+
+  Looking up Statuses for Items
+  To look up an individual status information for a given item and a sync job, use SynchronizationStatusService:
+   // given
+   SynchronizationStatusService sss = ...
+   ItemModel myItem = ...
+   CatalogVersionSyncJobModel syncJob = ...
+
+   // get info
+   SyncItemInfo info = sss.getSyncInfo( myItem, syncJob);
+
+   switch( info.setSyncStatus() )
+   {
+      case COUNTERPART_MISSING:
+         if( info.getFromSource() ){
+            // new item to be copied
+         }else{
+            // leftover target  item without source
+         }
+      break;
+      case NOT_SYNC:
+         // item exists on both sides but need update
+   }
+   For any pair of items being synchronized, an ItemSyncTimestamp item is created for tracking their status. We can look up that item
+   using SyncItemStatus:
+    // given
+    SyncItemInfo info = sss.getSyncInfo( myItem, syncJob);
+    ModelService modelService = ...
+
+    // get last sync pending attributes
+    PK tsPK = info.getSyncTimestampPk();
+    if( tsPK != null )
+    {
+       ItemSyncTimestampModel ts = modelService.get(tsPK);
+       for( AttributeDescriptorModel pending : ts.getPendingAttributes() )
+       {
+          // got it
+       }
+  To look up multiple statuses for lists of items or for multiple sync jobs, use bulk methods:
+   // given
+   SynchronizationStatusService sss = ...
+
+   // bulk get for one item with multiple sync jobs set up
+   ItemModel item = ...
+   List<ItemSyncJobModel> syncJobs = ...
+   List<SyncItemStatus> states = sss.getSyncInfo( item, syncJobs );
+
+   // bulk get for multiple items with multiple sync jobs set up
+   ItemSyncJobModel syncJob = ...
+   List<ItemModel> items = ...
+   List<SyncItemStatus> states = sss.getSyncInfo( items, syncJob );
+
+   Note that the bulk methods check whether the given items are actually applicable to the given sync job or not.
+    If they're not, information with SyncItemStatus.NOT_APPLICABLE is returned.
+
+    Looking up Sync Jobs for Items
+
+    Sometimes we may want to find out which sync jobs are actually responsible for a given item, either using
+    it as source or target. For that purpose, the service offers these methods:
+
+    // given
+    SynchronizationStatusService sss = ...
+    ItemModel myItem = ...
+
+    // where do we sync this to?
+    List<SyncItemJobModel> syncFromHereJobs = sss.getOutboundSynchronizations();
+
+    // where do we get data synced from?
+    List<SyncItemJobModel> syncToHereJobs = sss.getInboundSynchronizations();
+
+
+
+
+
+
+
+Reference:
+https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b74cb8186691014a19de16c7b468699.html
