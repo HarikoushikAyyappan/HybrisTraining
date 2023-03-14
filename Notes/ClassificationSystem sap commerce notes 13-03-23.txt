@@ -1,0 +1,111 @@
+13/03/23
+Classification
+
+Working with classification:
+
+ Adding a Product to a Classifying Category:
+
+ Backoffice Administration Cockpit enables us to add a product to a classifying category.
+
+ Procedure
+ Log into Backoffice.
+ Go to Catalog -> Classification Systems -> Classifying Categories.
+ Select a category to which you want to add your product.
+ Go to the Category Structure tab.
+ Scroll down to the Subcategories and Products section.
+ Click the ... icon under Included Products to display a list of the products.
+ Select the check mark next to the products you wish to add to the category. You can select more than one product.
+ Click Select to close the window and add the products.
+ Click Save to save your assignment.
+
+ Classifying a Product Category
+ We can classify a product category in Backoffice Administration Cockpit.
+
+ Procedure
+ Log in to Backoffice.
+ Go to Catalog  Classification Systems -> Classification Categories.
+ Select a classification category from the list, or search for the classification category using the Search field.
+ Go to the Category Structure tab for the selected classification category.
+ Click the ... icon next to the empty field under Supercategories or Subcategories and Products to open the classification categories list.
+ Click the checkmark next to the required category or product by clicking the Reference Search window to select one or more categories.
+ Click Select.
+
+ Creating Category Features
+ The Classification functionality of SAP Commerce allows us to assign attributes more dynamically than using the SAP Commerce's type system
+
+ Creating Category Features
+ We can create new category features in Backoffice Administration Cockpit.
+
+ Procedure
+ Log into Backoffice.
+ Go to Catalog -> Classification Systems -> Classifying Categories.
+ Select the classifying category in which you'd like to create a category feature from the search result list.
+ Go to the Class Attributes tab.
+ Click Create New Category Feature.
+ A pop-up appears.
+ Select a feature descriptor for the new category feature from the available choices in the Feature Descriptor menu.
+ If the required feature descriptor is not available, you can create it. For more information, see Creating a Feature Descriptor.
+ Click Next until we reach the final screen, then click Done.
+ Click Save to save our new category feature.
+
+  Creating a Feature Descriptor
+  We can create new feature descriptors for your category features in Backoffice Administration Cockpit.
+
+  Procedure
+  Log in to Backoffice.
+  Go to Catalog -> Classification Systems.
+  Click + to open the Create New Feature Descriptor window.
+  Enter an identifier name for the classification feature into the Identifier field.
+  Select the classification system version which is to hold the classification feature from the Classification System Version menu.
+  Click Done.
+  We created a new feature descriptor.
+
+  Creating Classification Systems
+  In SAP Commerce, we can create classification systems, blank classification systems that we can use to create a classification
+   hierarchy, and predefined classification systems.
+
+  Procedure
+  Log in to Backoffice Administration Cockpit.
+  Go to Catalog -> Catalogs
+  Click the down arrow next to the + icon above the list of available catalogs.
+  Click the down arrow next to Catalog in the menu and select Classification system from the available options.
+  Enter the required details for your new classification system, and set the default status of the system using the radio buttons if required.
+  Click Done.
+  Results
+  When you refresh the list by clicking Search, your new classification system appears in the list.
+
+  Creating Classification System Versions
+  Creating a classification system version is only possible in the context of a catalog. A classification system version cannot
+   exist outside a catalog version.
+
+  Procedure
+  Log into Backoffice.
+  Go to Catalog  Catalogs.
+  Select the catalog in which we'd like to create a classification system version from the list of available catalogs and versions.
+  Got to the Common tab in the catalog details.
+  Click the arrow next to the Create new Catalog version field under Versions of this Catalog.
+  Click the arrow next to Catalog version to expand the options.
+  Select Classification system version.
+  Enter the required details in the Create New Classification system version window that appears.
+  Click Done.
+
+  Creating Classifying Categories
+  We can easily create a new classifying category in Backoffice Administration Cockpit.
+
+  Procedure
+  Log in to Backoffice.
+  Go to Catalog -> Classification Systems -> Classifying Categories.
+  Click + to open the Create New Classifying Category window.
+  Enter an identifier name for the classification feature into the Identifier field.
+  Select the classification system version from the Classification System Version menu.
+  Click Done
+
+  Classification Feature Value API
+   We can use Classification System Api to manage Classification Attributes and Feature Value.
+
+
+   Reference:
+   https://help.sap.com/docs/SAP_COMMERCE/d0224eca81e249cb821f2cdf45a82ace/8b74cb8186691014a19de16c7b468699.html
+
+
+
