@@ -1,0 +1,164 @@
+17/03/23
+
+Price Calculation:
+ Filtering Price Rows:
+   During Filtering Process,europe1 priceFactory selects all the PriceRows matching the combination of customer and product.
+
+   A priceRow must match all of the following criteria to apply,
+
+   customer or customer group or no customer-related value (blank field)
+   product or product group or no product-related value (blank field)
+   date range
+   scale price
+
+   If any one of the above criteria fails,then europe1 priceFactory will not consider it.
+
+   Customer matching:
+    To match the customer,PriceRow must be one of the following
+     1.empty
+     2.set to match the customer or customer user group
+
+     The following table lists all the possibilities on whether the pricerow is applied to the customer.
+
+     PriceRow Assigned To                  Current Customer                              PriceRow Applies to the Current Customer?
+
+     Kotal                                  Kotal                                              Yes
+     Kotal                                   abel                                               No
+     customergroup                          kotal(member of customergroup)                     Yes
+     customergroup                          Abel(not a member of customergroup)                 No
+     (no assignment)                        Kotal                                               Yes
+     (no assignment)                        Abel                                                Yes
+     (no assignment)                        kotal(member of customergroup)                     Yes
+     (no assignment)                         Abel(not a member of customergroup)                Yes
+
+
+   Product Matching:
+   To match a product, a PriceRow must be one of the following:
+
+  1. empty
+  2. set to match the product or the product's price group.
+
+  PriceRow Assigned To                Current Product                               PriceRow Applies to the Current Product?
+
+  B00005LJ7N-1                        B00005LJ7N-1                                      Yes
+  B00005LJ7N-1                        C232134_0                                         No
+  cameragroup                        B00005LJ7N-1(member of cameragroup)               Yes
+  cameragroup                         C232134_0 (not member of camera group)           No
+  (no assignment)                     B00005LJ7N-1                                     Yes
+  (no assignment)                     C232134_0                                         Yes
+  (no assignment)                   B00005LJ7N-1(member of cameragroup)                Yes
+  (no assignment)                      C232134_0 (not member of camera group)            Yes
+
+  Scale Prices:
+    A PriceRow object can define a scale price through minqtd attribute.
+    Generally if the scale price quantity increases the the price per quantity decreases.
+
+    Scale Price Quantity                      Price per Unit
+      1                                          100 €
+      2                                           95 €
+  Net/Gross Prices:
+    For each priceRow we can define whether it is net price or gross price.
+    Net Price is the pure price of the product and does not include any taxes whereas gross price is the price which is the effective price
+     for customer  after deduction of taxes.
+    PriceRows has an attribute called net which is used to define whether the value is given in net format or gross format.
+    We can use isNet() and setNet(Boolean net) methods to retrieve and specify prices's net or gross status.
+
+    Currency Conversion:
+     A priceRow is always epecified in a certain currency. If the currency specifies in pricerow is different from the customer;s
+     session,sap automatically converts based on the conversion rates.
+
+     Price Value in PriceRow   Session Currency   Conversion Rate    Effective Price
+     10 USD                     USD                1:1                10 USD
+     10 USD                     GBP                1.3:1              7.70 GBP
+
+     Using unitFactor:
+     The unitfactor attribute specified with priceRow object is used to create scale price with units.
+     The applications of the unitfactor is,
+        we can scale small prices by a manaegable factor.
+        we can base the price on the lot size that we receive the goods in.
+
+        In order to configure the number of digits at the base price, use the following property:
+
+        #scale of the BigDecimal value to be returned. Used during a conversion of Number value to the SQL BigDecimal.
+        jdbcmappings.big_decimal_scale=5
+
+
+        Sorting PriceRows and Selecting a Final Price:
+          After the europe1 price factory gathers all the possible pricerows that might apply,those price rows are sorted by customer
+          and product matches.
+          The customer match has high priority than product match and matching individual settings ranks higher than group settings.
+          The priorities are in the following order:
+         1. P + C
+         2. PG + C
+         3. P + CG
+         4. PG + CG
+         5. P + C*
+         6. PG + C*
+         7. P* + C
+         8. P* + CG
+         9. P* + C*
+
+         P -Product matches exactly
+         C -Customer matches exactly
+         PG  - Productgroup matches exactly
+         CG  -Customergroup matches exactly
+         P*  -Price matches for all products
+         C* -Price matches for all customers
+
+        Enabling Legacy Query Strategy
+        Use the following property with the true value to enable the legacy query strategy for fetching user group and product ID
+         prices parameters in DefaultPDTRowsQueryBuilder:
+         europe1.use.legacy.productid.query.strategy=
+         The default value is false.
+  Tax Calculation:
+    Sap commerce stores all the possible taxes for customers and products as tax row objects.
+    Every TaxRow Object represents a certain taxrow constellation which is optionally related to date range,customer,product,customer group
+    or product group.
+    Every TaxRow object is a potential tax.
+    Unlike prices,which can be applied one at a time,taxes and discounts accumulate.
+    If an order entry is eligible for more than one tax then all the taxes will be taken into effect.
+    eg.If a customer is assigned an individual tax rate of 20% and a product has tax of 20%,so both taxes will get accumulated for the
+     particular order entry.
+     When a tax is required, the Europe1 PriceFactory retrieves all TaxRow objects related to the combination of customer and products
+
+     Attributes of a TaxRow:
+
+     Attribute Name     Attribute Type            Mandatory      Description
+     absolute           java.lang.boolean        no
+     currency            Currency                no
+     dateRange          StandardDateRange        no               Specify a date range for the TaxRow object's validity.
+     endTime             java.util.Date          no
+     pg                   ProductTaxGroup        no              Select a ProductTaxGroup the tax is effective for. The discount is applied to all members of this ProductTaxGroup
+     product             Product                 no           Specify the product the tax is set for.
+     productMatchQualifier  java.lang.Long       no
+     startTime               java.util.Date      no
+     tax                     Tax                 yes
+     ug                     UserTaxGroup         no          Select a UserTaxGroup the tax is effective for. The discount is applied to all members of this UserTaxGroup.
+     user                   User                 no          Specify the customer the tax is set for.
+     userMatchQualifier     java.lang.Long       no
+     value                  java.lang.Double     no
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
