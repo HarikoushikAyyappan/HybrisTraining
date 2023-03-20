@@ -1,0 +1,404 @@
+20/02/23
+
+Tax Calculation Continuation:
+ Filtering TaxRows:
+   During the filtering phase,europe 1 priceFactory selects all the tax rows matching the combination of customer and product information.
+   The criteria for selection are,
+     The tax row must match the customer or customer group.Or the tax row must not have assigned.
+     The tax row must match the product or product group.Or the tax row must not be assigned.
+     Date Range
+     If a TaxRow fails to match all criteria, it is not applied and therefore not considered by the Europe1 PriceFactory.
+     The following sections provide details on these criteria,
+
+     Customer Matching
+     If there is a TaxRow that has no Customer or UserTaxGroup assigned to it, that TaxRow is applied to all customers and is
+      therefore effective by default.
+
+     To match a customer, a TaxRow must be one of the following:
+
+     1.Empty
+     2.Set to match the customer
+     3.Set to match the customer's user group.
+
+    The following table lists some possible combinations and whether the respective TaxRow is applied to the customer.
+
+    TaxRow Assigned To                Current Customer                            TaxRow Applies to the Current Customer?
+
+    kotal                               kotal                                       Yes
+    kotal                                abel                                        No
+    customergroup                       kotal(member of customergroup)               Yes
+    customergroup                        abel(not a member of customergroup)         No
+    no assignment                          kotal                                     Yes
+    no assignment                          abel                                      Yes
+    no assignment                       kotal(member of customergroup)               Yes
+    no assignment                       abel(not a member of customergroup)          Yes
+    In other words:
+
+    If the current Customer is different from the Customer the TaxRow is assigned to, the TaxRow is not applied.
+    If the TaxRow is assigned to a UserTaxGroup and the current Customer is not a member of this UserTaxGroup, the TaxRow is not applied.
+
+   Product Matching:
+    If there is a TaxRow that has no Product or ProductTaxGroup assigned to it, that TaxRow is applied to all products and is
+    therefore effective by default.
+
+    To match a product, a TaxRow must be one of the following:
+
+    Empty
+    Set to match the product
+    Set to match the product's tax group
+
+    TaxRow Assigned to             Current Product                       TaxRow Applies to the Current Product?
+
+    B00005LJ7N-1                  B00005LJ7N-1                            Yes
+    B00005LJ7N-1                  C232134_0                               No
+    cameragroup                   B00005LJ7N-1 (member of cameragroup)     Yes
+    cameragroup                   C232134_0(not member of cameragroup)     No
+    (no assignment)                 B00005LJ7N-1                           Yes
+      (no assignment)              C232134_0                                Yes
+     (no assignment)               B00005LJ7N-1 (member of cameragroup)     Yes
+      (no assignment)              C232134_0(not member of cameragroup)     Yes
+     In other words:
+
+     If the current Product is different from the Product the TaxRow is assigned to, the TaxRow is not applied.
+     If the TaxRow is assigned to a ProductTaxGroup and the current Product is not a member of this ProductTaxGroup, the TaxRow is not applied.
+
+     Discount Calculation:
+       SAP Commerce stores all possible discounts for products and customers as DiscountRow objects. EveryDiscountRow represents a
+       certain discount constellation, which is optionally related to a certain date range, customer, product, group of customers,
+       or group of products.
+       Every DiscountRow object is a potential discount. Unlike prices, which can only be applied one at a time, taxes and discounts accumulate
+       It is also same as the concept of tax(Here also accumulation os there.)
+
+       Attributes of a DiscountRow:
+         Attribute Name              Attribute Type                  Mandatory                          Description
+         absolute                    java.lang.Boolean                 no                              Jalo-only attribute
+         currency                   Currency                            no
+         dateRange         de.hybris.platform.util.StandardDateRange     no                             Jalo-only attribute
+         discount                 Discount                                yes
+         discountString          java.lang.String                       no                              Jalo-only attribute
+         endTime                  java.util.Date                        no
+         pg                         ProductDiscountGroup                no
+         product                   Product                              no
+         productMatchQualifier       java.lang.Long                    no
+         startTime                  java.util.Date                     no
+         user                       User                                 no
+         userMatchQualifier           java.lang.Long                   no
+         ug                             UserDiscountGroup              no
+         value                            java.lang.Double             no
+
+         If neither a customer nor a UserDiscountGroup is given for a certain DiscountRow, the specified discount applies
+          to all customers in SAP Commerce.
+         If neither a product nor a ProductDiscountGroup is given for a certain DiscountRow, the specified discount applies to
+         all products in SAP Commerce.
+
+         The above specified attributes comes for Global Discount Row Objects also.
+
+         If neither a customer nor a UserDiscountGroup is given for a certain GlobalDiscountRow, the specified discount applies
+         to all customers in SAP Commerce.
+         If neither a product nor a ProductDiscountGroup is given for a certain GlobalDiscountRow, the specified discount
+         applies to all products in SAP Commerce.
+
+         Filtering DiscountRows:
+           During the filtering phase, the Europe1 PriceFactory selects all DiscountRows matching the combination of customer and product.
+           A DiscountRow must match all of the following criteria to apply:
+
+           1.customer or customer group or no customer-related value (blank field)
+           2.product or product group or no product-related value (blank field)
+           3.date range
+           If a DiscountRow fails to match all the criteria, it is not applied and therefore not considered by
+            the Europe1 PriceFactory. The details of these criteria are,
+
+        Customer Matching
+        If there is a DiscountRow that has no Customer or UserDiscountGroup assigned to it, that DiscountRow is applied to
+         all the customers and is therefore effective by default.
+
+        To match a customer, a DiscountRow must be one of the following:
+
+        1.Empty
+        2.Set to match the customer
+        3.Set to match the customer's user group
+        If the current Customer is different from the Customer the DiscountRow is assigned to, the DiscountRow is not applied.
+        If the DiscountRow is assigned to a UserDiscountGroup and the current Customer is not a member of this UserDiscountGroup,
+        the DiscountRow is not applied.
+
+        Product Matching
+        If there is a DiscountRow that has no Product or ProductDiscountGroup assigned to it, that DiscountRow is applied to
+        all products and is therefore effective by default.
+
+        To match a product, a DiscountRow must be one of the following:
+
+        1.Empty
+        2.Set to match the product
+        3.Set to match the product's Discount group
+        To match the product, the DiscountRow's product attribute must be set to contain the product.
+
+        To match the product's discount group, the DiscountRow's pg (product discount group) must be set to contain a discount group
+        (an instance of ProductDiscountGroup) which contains the product.
+
+        Time-Dependent Prices and Discounts:
+         The types that define Prices,Discounts and taxes have a common super type called abstract PriceDiscountTaxRow, or PDTRow type.
+         The PDTRow type optionally accepts an attribute named daterange of type de.hybris.platform.util.DateRange (time span),
+         whose range defines when the respective PriceRow,TaxRows or DiscountRows instance applies.
+         If the current date is earlier than the start date or later than the end date, respectively, the price, tax,
+          or discount isn’t applied.
+         A given date starts by 00:00:00 that day and ends by 23:59:59 that same day. You can’t define a DateRange to end by 15:23:34
+
+       Start Date               End Date              Daterange Valid
+       2005-03-16              2005-04-19           March 16, 2005, 00:00:00 through April 19, 2005, 23:59:59
+       (blank)                  2005-04-19           (not possible)
+       2005-03-16              (blank)                (not possible)
+       (blank)                 (blank)                Always valid
+
+       Defining Date Ranges:
+        To assign a DateRange to a price or tax definition, create an instance of a DateRange, get the instance of the current
+        PriceFactory, and refer the instantiated DateRange as a parameter in the call for the createPriceRow( ...) or
+        createDiscountRow( ...) method, respectively, as in the following code snippet:
+
+        Date startDate = new Date( 2005, 06, 12 );
+        					Date endDate = new Date( 2006, 02, 01 );
+        					DateRange dateRange = new StandardDateRange( startDate, endDate );
+        					Europe1PriceFactory pf = (Europe1PriceFactory) OrderManager.getInstance().getPriceFactory();
+        					pf.createPriceRow( product, productPriceGroup, user, userPriceGroup, minQuantity,
+        					currency, unit, unitFactor, net, dateRange, price );
+        					pf.createDiscountRow( product, productPriceGroup, user, userPriceGroup, currency, value, dateRange, discount );
+      We must make sure that when creating startdates and enddates,the dates are not collided or else europe1 priceFactory will get confused
+      whether which price it should take.
+      As Dates in java are so precise,we must declare declare the end time and the start time of a successive price row
+       to be at least one millisecond apart.
+          PriceRowModel beforePrice = modelService.create(PriceRowModel.class);
+          							beforePrice.setStartTime( new Date(1L) );
+          							beforePrice.setEndTime( new Date(9999L) );
+          							...
+          							PriceRowModel afterPrice = modelService.create(PriceRowModel.class);
+          							afterPrice.setStartTime( new Date(10000L) );
+          							afterPrice.setEndTime( new Date(20000L) );
+          							...
+          							modelService.saveAll(beforePrice, afterPrice);
+
+          							// or using DateRange
+
+
+          							PriceRowModel beforePrice = modelService.create(PriceRowModel.class);
+          							beforePrice.setDateRange( new StandardDateRange( new Date(1L) , new Date(9999L) ) );
+          							...
+          							PriceRowModel afterPrice = modelService.create(PriceRowModel.class);
+          							afterPrice..setDateRange( new StandardDateRange( new Date(10000L), new Date(20000L) ) );
+          							...
+          							modelService.saveAll(beforePrice, afterPrice);
+ Defining Open-Ended Date Ranges:
+   To allow for a daterange to be open-ended, for example "since February 1, 2016 until forever", or have no defined start date,
+    for example "since forever in the past until February 1, 2017 ", set a fixed date and then set the other date to a point in
+    time far in the future or far in the past. As in the following example, you could set it ten years or more from now.
+      						// setting a fixed date as a start date for an "open end" daterange
+      						Date startDate = new Date( 2016, 02, 01 );
+      						// setting an "open end" date as a time point 10 years in the future from the current time
+      						Date endDate = new Date( System.currentTimeMillis() + 10 * 365 * 24 * 60 * 60 * 1000 ) );
+      						DateRange dateRange = new StandardDateRange( startDate, endDate );
+   In this case, we need to make sure that there are no two dateranges of this kind for a given product as the Europe1 PriceFactory
+   wouldn’t be able to determine which is the better match.
+
+Overriding and Testing Settings:
+   we can override customer-related and product-related group settings.
+   Overriding Group Settings:
+    It is possible to override customer and product group settings on both the session and cartlevel.
+    Session-Level Customer Group Settings:
+      For customer-related group settings, that is customer tax, discount, and price groups, there's another way to influence Europe1.
+      To override the grouping attributes stored with the customer itself, use SessionService to set them for the enclosing session:
+          // setting customer price group
+          							sessionService.setAttribute(de.hybris.platform.europe1.constants.Europe1Constants.PARAMS.UPG,..);
+          							// setting customer tax group
+          							sessionService.setAttribute(de.hybris.platform.europe1.constants.Europe1Constants.PARAMS.UTG,..);
+          							// setting customer discount group
+          							sessionService.setAttribute(de.hybris.platform.europe1.constants.Europe1Constants.PARAMS.UDG,..);
+      Once there are values set at session level, Europe1 will ignore the values at the customer items.
+      This is particularly helpful for technical users (Anonymous) when influencing prices, taxes or discounts because they can
+      represent various real customer groups.
+
+     Cart-Level Product Group Settings
+     We can also override product-related group settings. However, this is done at order and cart entry levels instead of a
+     session level as is the case with customer groups.
+     This way each cart or order entry can be given individual product price, tax and discount groups.
+     // setting product price group
+     							cartEntry.setEurope1PriceFactory_PPG(..);
+     							// setting product tax group
+     							cartEntry.setEurope1PriceFactory_PTG(..);
+     							// setting product tax group
+     							cartEntry.setEurope1PriceFactory_PDG(..);
+     Testing Price, Tax, and Discount Settings
+     When we set up a configuration of prices, taxes and discounts, check whether the setup is correct or if there are errors
+      or side effects.
+      We can use the SAP Commerce StoreFoundation to conveniently check the price configuration by logging in as various users.
+
+    Decoupling PDTRows from Product:
+      It is possible to create PDTRow as separate entities and connect them with a given Product not by a hard reference
+      using PK but rather through a kind of soft reference using the Product identifier, which in the default implementation
+      means Product code
+      It is to be noted that a instance of PTD Row is shared by a catalog with product before and after synchronization.
+
+      Impact on the Synchronization Process
+
+      Let's first look at the old way of importing products using your product.impex file:
+
+      product.impex:
+       $catalog-id=Default
+       $catalog-version=Staged
+
+       $catalogversion=catalogversion(catalog(id),version)[unique=true,default=$catalog-id:$catalog-version]
+       $prices=europe1prices[translator=de.hybris.platform.europe1.jalo.impex.Europe1PricesTranslator]
+
+       INSERT_UPDATE Product;code[unique=true];$catalogversion;name[lang=en];unit(code);$prices;approvalStatus(code);owner(Principal.uid);startLineNumber
+       ;product1;;product1;pieces;1 EUR;approved;admin;0
+       ;product2;;product2;pieces;2 EUR;approved;admin;1
+       etc...
+
+       This import file follows the old convention. If we have a file with 10000 rows, after syncing catalogs (staged to online) make a
+       query for the number of products and prices; you can find that there is 20000 products and 20000 prices.
+       Synchronization takes about 5 minutes.
+
+       Let's try with an import file that follows the new convention.
+
+       $catalog-id=Default
+       $catalog-version=Staged
+
+       $catalogversion=catalogversion(catalog(id),version)[unique=true,default=$catalog-id:$catalog-version]
+
+       INSERT_UPDATE Product;code[unique=true];$catalogversion;name[lang=en];unit(code);approvalStatus(code);owner(Principal.uid);startLineNumber
+       ;product1;;product1;pieces;approved;admin;0
+       ;product2;;product2;pieces;approved;admin;1
+       etc...
+
+       INSERT_UPDATE PriceRow;productId[unique=true];price;unit(code);currency(isocode)
+       ;product1;1;pieces;EUR
+       ;product2;2;pieces;EUR
+       etc...
+
+       If we import this file and synchronize the catalogs, the synchronization is much faster. The query for the number
+        of products yields 20000 but the number of prices is only 10000. This is because only products are synchronized, not prices.
+
+    Editing Tax and Discount Values of an Order in Backoffice:
+       We can edit tax and discount values of an order in Backoffice. We assume that you apply taxes per line item - at order entry level.
+       It means a tax is calculated on the total selling price of an individual item.
+       Our examples show discounts applied both at order entry, and order levels.
+
+       Requirement to do:
+        We must create the following,
+         Product
+         Order
+         Order entry
+
+    Procedure
+    Log into Backoffice.
+    In the Explorer tree, click Catalog -> Products to open the product collection browser.
+    In the product collection browser, click +Product to open the Create New Product window.
+    Complete all required fields for your product.
+    Click Done to complete creating a new product.
+
+    Creating an Order
+    Procedure
+    Log into Backoffice.
+    In the Explorer tree, click Order -> Orders to open the order collection browser.
+    In the order collection browser, click +Orders to open the Create New Order window.
+    Complete all required fields for your order.
+    Click Done to complete creating an order.
+
+    Creating an Entry for Your Order
+    Context
+    When creating an order entry, you assign it an order and a product. Create an order and a product in advance. You can start creating an entry from within an order editor.
+
+    Procedure:
+     Log into Backoffice.
+     In the Explorer tree, click Order -> Orders to open the order collection browser.
+     In the order collection browser, click the name of the order for which you want to create an entry to open the order editor.
+     Make sure that the order editor view is switched to POSITIONS AND PRICES.
+     In the Entries field, click Create new Order Entry to open the Create new Order Entry window:
+     Complete all required fields for your order entry. Point to the product and the order you created earlier to assign them to the entry.
+     Click Done to complete creating your order entry.
+
+   Assigning a Tax Rate and Discount Value for your Entry:
+   Context:
+   Apart from assigning a tax rate or a discount value, set a base price for the product assigned to our entry. we can access your entry through
+   the order editor.
+
+   Procedure
+   Log into Backoffice.
+   In the Explorer tree, click Order  Orders to open the order collection browser.
+   Click the order that has the entry you want to edit to open the order editor.
+   Make sure that the order editor view is switched to POSITIONS AND PRICES.
+   In the Entries field, click your entry to open the entry editor.
+   Set the base price value for your product in the Base Price field.
+   Click Add new item .
+   A window opens where we can provide our values to define discounts or taxes - see the next step.
+
+   Define our discounts or taxes.
+   When providing a value for discounts or taxes, follow the <code> : <value>(%| <CUR>)[ = <appliedValue>] pattern, for example, taxName : 10.00% = 0.10, or taxName : 10 EUR. Provide and edit the parameters before the = sign only - the appliedValue is calculated automatically.
+
+   Click Add to complete adding discounts or taxes.
+   Click Save in the entry editor. Close it to switch back to the order collection browser.
+   In the order collection browser, check the False option in the Calculation is up to date field
+   Click Save.
+   Click  sigma button to recalculate our order.
+   Refresh the view.
+   Open our order entry through the order editor to make sure that the values have been saved and recalculated.
+   Below we can see an example entry with a discount and tax set at 10% and 23% respectively. we can also see that the total price has been
+    recalculated too:
+
+   Switch the view to the order editor to see the final calculations at an order level.
+   Below we can see an example order that consists of 2 entries. In both these entries tax rates have been applied and we can see
+    them listed in the order editor. Discounts applied at entry level are not listed in the order editor.
+    They are, however, applied and reflected in an entry Total Price.
+
+Assigning a Discount at Order Level
+Unlike tax rates, we can apply discounts at order level - such a discount affects the entire order. To apply a discount,
+ use the order editor.
+
+Target Price Discount:
+
+  when we apply a target price Discount,we apply the value as a requested target price for a given unit of product.
+  A target price discount specifies a target discount proce rather than using  pricereduction.
+
+  A target price discount allows  to easily implement use cases such as "Sell for €9.99 regardless of the current base price".
+   It thus relieves project developers from calculating discounts manually. Note that not only the calculation was extended to support a
+   target price discount. Also Europe1 allows  to set up DiscountRow items containing target price discounts.
+
+  Creating a Target Price Discount Using Europe1
+  To create a discount, you need Discount and DiscountRow items.
+
+  Create a discount item first. When creating a discount row, point to your discount and product items. In this way you bind
+   all those items together.
+   Additionally, complete the Value, and Currency fields. Set the As target price attribute to True so that the discount value
+    we just provided is treated as a target price discount:
+
+Recalculating Your Order
+If we have configured your order properly, our product is bound to it through the order entry. we have already bound the price
+to the product, and our order entry defines a number of pieces of the product.
+
+We are ready to recalculate  order. To recalculate  order, use the following script in Administration Console:
+  import de.hybris.platform.core.model.order.OrderModel
+
+  OrderModel order=[code:"001"]
+  order=flexibleSearchService.getModelByExample(order)
+
+  calculationService.recalculate(order)
+
+  println "Recalculated order $order.code - new total is $order.totalPrice"
+
+ Remember to provide a proper value for order code. In our example it is 001.
+
+ Creating a Target Price Discount Manually
+ We can create a target price discount manually in your order entry using the Discount Values feature. Use a special expression for
+  adding discounts.
+  When inserting a value for a discount, follow this expression pattern: <code> : T <value>(<CUR>)[ = <appliedValue>], for example
+   DiscountName : T 10 EUR. Leave the appliedValue parameter as is, or delete it.
+  It is calculated automatically when you recalculate your order. Letter T in the expression marks your discount value as a
+  target price discount.
+
+
+
+
+
+
+
+
+
+
+
